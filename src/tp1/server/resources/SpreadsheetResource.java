@@ -351,7 +351,7 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 	}
 
 	@Override
-	public void deleteSpreadsheets(String userId, String password) {
+	public void deleteUserSpreadsheets(String userId, String password) {
 
 		synchronized (this) {
 
@@ -362,6 +362,8 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 			} catch (Exception e) {
 				throwWebAppException(Log, e.getMessage(), type, Response.Status.BAD_REQUEST);
 			}
+
+			if(!valid) throwWebAppException(Log, "Invalid password.", type, Response.Status.FORBIDDEN);
 
 			Set<String> sheets = spreadsheetOwners.get(userId);
 

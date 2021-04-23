@@ -1,6 +1,7 @@
 package tp1.api.service.soap;
 
 import jakarta.jws.WebService;
+import jakarta.ws.rs.PathParam;
 import jakarta.ws.rs.QueryParam;
 import tp1.api.Spreadsheet;
 
@@ -94,5 +95,12 @@ public interface SoapSpreadsheets {
 	 */
 	String[][] getSpreadsheetValues(String sheetId, String userId, String password);
 
+	/**
+	 * Deletes a users spreadsheets. Only the owner can call this method.
+	 * @param userId - The user requesting the values
+	 * @param password - the password of the owner of the spreadsheet
+	 *
+	 */
+	void deleteUserSpreadsheets(String userId, String password);
 
 }
