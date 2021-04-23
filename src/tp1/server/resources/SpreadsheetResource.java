@@ -18,10 +18,7 @@ import tp1.util.CellRange;
 import tp1.util.InvalidCellIdException;
 
 import java.net.URI;
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
@@ -179,6 +176,8 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 	@Override
 	public Spreadsheet getSpreadsheet(String sheetId, String userId, String password) {
 
+
+
 		if( sheetId == null || userId == null || password == null ) {
 			throwWebAppException(Log, "SheetId or userId or password null.", type, Response.Status.BAD_REQUEST);
 		}
@@ -189,7 +188,7 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 			throwWebAppException(Log, "Sheet doesnt exist.", type, Response.Status.NOT_FOUND);
 		}
 
-		if (!sheet.getSharedWith().contains(userId)) {
+		if (!userId.equals(sheet.getOwner()) && !sheet.getSharedWith().contains(userId)) {
 			throwWebAppException(Log, "User " + userId + " does not have permissions to read this spreadsheet.", type, Response.Status.BAD_REQUEST);
 		}
 
@@ -229,7 +228,7 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 			throwWebAppException(Log, "Sheet doesnt exist.", type, Response.Status.NOT_FOUND);
 		}
 
-		if (!spreadsheet.getSharedWith().contains(userId)) {
+		if (!userId.equals(spreadsheet.getOwner()) && !spreadsheet.getSharedWith().contains(userId)) {
 			throwWebAppException(Log, "User " + userId + " does not have permissions to read this spreadsheet.", type, Response.Status.BAD_REQUEST);
 		}
 
