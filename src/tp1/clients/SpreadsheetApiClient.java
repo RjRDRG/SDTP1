@@ -2,6 +2,8 @@ package tp1.clients;
 
 import tp1.api.Spreadsheet;
 
+import java.util.Set;
+
 public interface SpreadsheetApiClient {
 
     String SERVICE = "SpreadsheetsService";
@@ -21,4 +23,6 @@ public interface SpreadsheetApiClient {
     void shareSpreadsheet(String sheetId, String userId, String password);
 
     void unshareSpreadsheet( String sheetId, String userId,  String password);
+
+    Set<String> getUserSpreadsheetIds(String userId, String password);
 }

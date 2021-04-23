@@ -35,6 +35,7 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 	private final String domainId;
 
 	private final Map<String, Spreadsheet> spreadsheets;
+	private final Map<String, Set<String>> spreadsheetOwners;
 
 	private final SpreadsheetEngine engine;
 
@@ -48,6 +49,7 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 		this.domainId = domainId;
 		this.type = type;
 		this.spreadsheets = new HashMap<>();
+		this.spreadsheetOwners = new HashMap<>();
 		this.engine = SpreadsheetEngineImpl.getInstance();
 	}
 
@@ -88,7 +90,6 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 
 	private UsersApiClient cachedUserClient;
 	private UsersApiClient getLocalUsersClient() {
-		String sURL = null;
 
 		if(cachedUserClient == null) {
 			String serverUrl = discovery.knownUrisOf(domainId, UsersApiClient.SERVICE).stream()
@@ -96,7 +97,6 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 				.map(URI::toString)
 				.orElse(null);
 
-			sURL = serverUrl;
 			if(serverUrl != null) {
 				try {
 
@@ -120,13 +120,19 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 			throwWebAppException(Log, "Sheet or password null.", type, Response.Status.BAD_REQUEST);
 		}
 
+		if (sheet.getColumns() <= 0 || sheet.getRows() <= 0)
+			throwWebAppException(Log, "Invalid dimensions.", type, Response.Status.BAD_REQUEST);
+
+		String spreadsheetOwner = sheet.getOwner();
+
 		synchronized(this) {
+
 
 			//TODO: Evitar ciclos de referencias
 
 			boolean valid = true;
 			try {
-				valid = getLocalUsersClient().verifyUser(sheet.getOwner(), password);
+				valid = getLocalUsersClient().verifyUser(spreadsheetOwner, password);
 			} catch (Exception e) {
 				throwWebAppException(Log, e.getMessage(), type, Response.Status.BAD_REQUEST);
 			}
@@ -141,6 +147,11 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 			Spreadsheet spreadsheet = new Spreadsheet(sheet,sheetId,domainId);
 
 			spreadsheets.put(sheetId, spreadsheet);
+
+			if (!spreadsheetOwners.containsKey(spreadsheetOwner))
+				spreadsheetOwners.put(spreadsheetOwner, new TreeSet<>());
+
+			spreadsheetOwners.get(spreadsheetOwner).add(sheetId);
 
 			return sheetId;
 		}
@@ -196,8 +207,11 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 
 		if(!valid) throwWebAppException(Log, "Invalid password.", type, Response.Status.FORBIDDEN);
 
-		if (!userId.equals(sheet.getOwner()) && !sheet.getSharedWith().contains(userId)) {
-			throwWebAppException(Log, "User " + userId + " does not have permissions to read this spreadsheet.", type, Response.Status.FORBIDDEN);
+		if (!userId.equals(sheet.getOwner())) {
+
+			if (!sheet.getSharedWith().stream().anyMatch(user -> user.contains(userId)))
+				throwWebAppException(Log, "User " + userId + " does not have permissions to read this spreadsheet.", type, Response.Status.FORBIDDEN);
+
 		}
 
 		return sheet;
@@ -333,6 +347,23 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 						type, Response.Status.NOT_FOUND);
 
 			sharedWith.remove(userId);
+		}
+	}
+
+	@Override
+	public void deleteSpreadsheets(String userId, String password) {
+
+		synchronized (this) {
+
+			boolean valid = true;
+
+			try {
+				valid = getLocalUsersClient().verifyUser(userId, password);
+			} catch (Exception e) {
+				throwWebAppException(Log, e.getMessage(), type, Response.Status.BAD_REQUEST);
+			}
+
+			return spreadsheetOwners.get(userId);
 		}
 	}
 }

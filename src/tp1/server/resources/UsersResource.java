@@ -3,11 +3,15 @@ package tp1.server.resources;
 import jakarta.inject.Singleton;
 import jakarta.jws.WebService;
 import jakarta.ws.rs.core.Response.Status;
+import tp1.api.Spreadsheet;
 import tp1.api.User;
 import tp1.api.service.rest.RestUsers;
 import tp1.api.service.soap.SoapUsers;
+import tp1.clients.*;
+import tp1.discovery.Discovery;
 import tp1.server.WebServiceType;
 
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -26,7 +30,10 @@ import static tp1.util.ExceptionMapper.*;
 public class UsersResource implements RestUsers, SoapUsers {
 
 	private String domainId;
+
 	private WebServiceType type;
+
+	public static Discovery discovery;
 
 	private final Map<String, User> users = new HashMap<>();
 
@@ -129,6 +136,8 @@ public class UsersResource implements RestUsers, SoapUsers {
 				throwWebAppException(Log, "Password is incorrect.", type, Status.FORBIDDEN );
 			}
 
+
+
 			return users.remove(userId);
 		}
 	}
@@ -147,6 +156,31 @@ public class UsersResource implements RestUsers, SoapUsers {
 		}
 
 		return users.values().stream().filter(u -> u.getFullName().toLowerCase().contains(pattern.toLowerCase())).collect(Collectors.toList());
+	}
+
+	private SpreadsheetApiClient cachedSpreadsheetClient;
+	private SpreadsheetApiClient getLocalSpreadsheetClient() {
+
+		if(cachedSpreadsheetClient == null) {
+			String serverUrl = discovery.knownUrisOf(domainId, SpreadsheetApiClient.SERVICE).stream()
+					.findAny()
+					.map(URI::toString)
+					.orElse(null);
+
+			if(serverUrl != null) {
+				try {
+
+					if (serverUrl.contains("/rest"))
+						cachedSpreadsheetClient = new SpreadsheetRestClient(serverUrl);
+					else
+						cachedSpreadsheetClient = new SpreadsheetSoapClient(serverUrl);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+		return cachedSpreadsheetClient;
 	}
 
 }

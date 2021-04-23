@@ -12,6 +12,8 @@ import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import tp1.api.Spreadsheet;
 
+import java.util.Set;
+
 
 @Path(RestSpreadsheets.PATH)
 public interface RestSpreadsheets {
@@ -161,4 +163,15 @@ public interface RestSpreadsheets {
 	@Path("/{sheetId}/share/{userId}")
 	void unshareSpreadsheet( @PathParam("sheetId") String sheetId, @PathParam("userId") String userId, 
 			@QueryParam("password") String password);
+
+	/**
+	 * Deletes a users spreadsheets. Only the owner can call this method.
+	 * @param userId - the user that is requesting his sheets ids
+	 * @param password - the password of the owner of the spreadsheets
+	 * @return 200 and the set of ids
+	 * 		   400 if the login credentials are wrong
+	 */
+	@DELETE
+	@Path("/{userId}")
+	void deleteSpreadsheetIds(@PathParam("userId") String userId, @QueryParam("password") String password);
 }

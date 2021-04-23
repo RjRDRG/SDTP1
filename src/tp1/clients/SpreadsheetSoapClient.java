@@ -10,6 +10,7 @@ import tp1.api.service.soap.SoapSpreadsheets;
 import javax.xml.namespace.QName;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.Set;
 import java.util.function.Supplier;
 
 public class SpreadsheetSoapClient implements SpreadsheetApiClient {
@@ -101,5 +102,10 @@ public class SpreadsheetSoapClient implements SpreadsheetApiClient {
         retry( () -> { target.unshareSpreadsheet(sheetId, userId, password);
             return null;
         } );
+    }
+
+    @Override
+    public Set<String> getUserSpreadsheetIds(String userId, String password) {
+        return retry( () -> target.getUserSpreadsheetIds(userId, password) );
     }
 }
