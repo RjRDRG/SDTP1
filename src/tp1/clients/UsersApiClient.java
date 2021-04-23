@@ -7,7 +7,7 @@ import java.util.List;
 
 public interface UsersApiClient {
 
-    String SERVICE = "UsersService";
+    String SERVICE = "users";
 
     String createUser(User user);
 

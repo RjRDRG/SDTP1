@@ -6,7 +6,7 @@ import java.util.Set;
 
 public interface SpreadsheetApiClient {
 
-    String SERVICE = "SpreadsheetsService";
+    String SERVICE = "sheets";
 
     String createSpreadsheet(Spreadsheet sheet, String password );
 

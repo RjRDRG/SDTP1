@@ -28,7 +28,7 @@ public class UsersSoapServer {
 
     public static void main(String[] args) {
         try {
-            String domain = args.length > 1 ? args[0] : "OutdatedPieceOfSht";
+            String domain = args.length > 0 ? args[0] : "OutdatedPieceOfSht";
 
             String ip = InetAddress.getLocalHost().getHostAddress();
             String serverURI = String.format("http://%s:%s/soap", ip, PORT);
@@ -41,7 +41,9 @@ public class UsersSoapServer {
             server.start();
 
             Discovery discovery = new Discovery(  domain, SERVICE, serverURI);
+            UsersResource.setDiscovery(discovery);
             discovery.startSendingAnnouncements();
+            discovery.startCollectingAnnouncements();
 
             Log.info(String.format("%s Server ready @ %s\n", SERVICE, serverURI));
         } catch( Exception e) {

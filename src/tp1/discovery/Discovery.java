@@ -144,8 +144,9 @@ public class Discovery {
 	/**
 	 * Returns the known servers for a service.
 	 * 
-	 * @param  serviceName the name of the service being discovered
-	 * @return an array of URI with the service instances discovered. 
+	 * @param  domain the domain of the service being discovered
+	 * @param  service the name of the service being discovered
+	 * @return an array of URI with the service instances discovered.
 	 * 
 	 */
 	public Set<URI> knownUrisOf(String domain, String service) {
