@@ -363,7 +363,10 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 				throwWebAppException(Log, e.getMessage(), type, Response.Status.BAD_REQUEST);
 			}
 
-			return spreadsheetOwners.get(userId);
+			Set<String> sheets = spreadsheetOwners.get(userId);
+
+			sheets.forEach(id -> spreadsheets.remove(id));
+			spreadsheetOwners.remove(userId);
 		}
 	}
 }

@@ -173,5 +173,5 @@ public interface RestSpreadsheets {
 	 */
 	@DELETE
 	@Path("/{userId}")
-	void deleteSpreadsheetIds(@PathParam("userId") String userId, @QueryParam("password") String password);
+	void deleteSpreadsheets(@PathParam("userId") String userId, @QueryParam("password") String password);
 }

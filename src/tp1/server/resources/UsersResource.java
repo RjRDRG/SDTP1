@@ -2,6 +2,7 @@ package tp1.server.resources;
 
 import jakarta.inject.Singleton;
 import jakarta.jws.WebService;
+import jakarta.ws.rs.core.Response;
 import jakarta.ws.rs.core.Response.Status;
 import tp1.api.Spreadsheet;
 import tp1.api.User;
@@ -136,7 +137,11 @@ public class UsersResource implements RestUsers, SoapUsers {
 				throwWebAppException(Log, "Password is incorrect.", type, Status.FORBIDDEN );
 			}
 
-
+			try {
+				getLocalSpreadsheetClient().deleteSpreadsheets(userId, password);
+			} catch (Exception e) {
+				throwWebAppException(Log, "Could not delete spreadsheets.", type, Response.Status.BAD_REQUEST);
+			}
 
 			return users.remove(userId);
 		}
