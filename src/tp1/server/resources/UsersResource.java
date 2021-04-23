@@ -46,7 +46,7 @@ public class UsersResource implements RestUsers, SoapUsers {
 	}
 
 	public static void setDiscovery(Discovery discovery) {
-		SpreadsheetResource.discovery = discovery;
+		UsersResource.discovery = discovery;
 	}
 
 	private SpreadsheetApiClient cachedSpreadsheetClient;
