@@ -36,6 +36,7 @@ public class UsersRestServer {
 			JdkHttpServerFactory.createHttpServer(URI.create(serverURI), config);
 
 			Discovery discovery = new Discovery(  domain, SERVICE, serverURI);
+			UsersResource.setDiscovery(discovery);
 			discovery.startSendingAnnouncements();
 			discovery.startCollectingAnnouncements();
 

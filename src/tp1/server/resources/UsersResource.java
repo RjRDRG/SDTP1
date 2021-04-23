@@ -45,6 +45,34 @@ public class UsersResource implements RestUsers, SoapUsers {
 		this.type = type;
 	}
 
+	public static void setDiscovery(Discovery discovery) {
+		SpreadsheetResource.discovery = discovery;
+	}
+
+	private SpreadsheetApiClient cachedSpreadsheetClient;
+	private SpreadsheetApiClient getLocalSpreadsheetClient() {
+
+		if(cachedSpreadsheetClient == null) {
+			String serverUrl = discovery.knownUrisOf(domainId, SpreadsheetApiClient.SERVICE).stream()
+					.findAny()
+					.map(URI::toString)
+					.orElse(null);
+
+			if(serverUrl != null) {
+				try {
+					if (serverUrl.contains("/rest"))
+						cachedSpreadsheetClient = new SpreadsheetRestClient(serverUrl);
+					else
+						cachedSpreadsheetClient = new SpreadsheetSoapClient(serverUrl);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		}
+
+		return cachedSpreadsheetClient;
+	}
+
 	@Override
 	public String createUser(User user) {
 		Log.info("createUser : " + user);
@@ -161,30 +189,6 @@ public class UsersResource implements RestUsers, SoapUsers {
 		}
 
 		return users.values().stream().filter(u -> u.getFullName().toLowerCase().contains(pattern.toLowerCase())).collect(Collectors.toList());
-	}
-
-	private SpreadsheetApiClient cachedSpreadsheetClient;
-	private SpreadsheetApiClient getLocalSpreadsheetClient() {
-
-		if(cachedSpreadsheetClient == null) {
-			String serverUrl = discovery.knownUrisOf(domainId, SpreadsheetApiClient.SERVICE).stream()
-					.findAny()
-					.map(URI::toString)
-					.orElse(null);
-
-			if(serverUrl != null) {
-				try {
-					if (serverUrl.contains("/rest"))
-						cachedSpreadsheetClient = new SpreadsheetRestClient(serverUrl);
-					else
-						cachedSpreadsheetClient = new SpreadsheetSoapClient(serverUrl);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		}
-
-		return cachedSpreadsheetClient;
 	}
 
 }
