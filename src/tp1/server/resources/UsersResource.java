@@ -140,6 +140,7 @@ public class UsersResource implements RestUsers, SoapUsers {
 			try {
 				getLocalSpreadsheetClient().deleteUserSpreadsheets(userId, password);
 			} catch (Exception e) {
+				e.printStackTrace();
 			}
 
 			return users.remove(userId);
@@ -173,7 +174,6 @@ public class UsersResource implements RestUsers, SoapUsers {
 
 			if(serverUrl != null) {
 				try {
-
 					if (serverUrl.contains("/rest"))
 						cachedSpreadsheetClient = new SpreadsheetRestClient(serverUrl);
 					else

@@ -116,17 +116,15 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 	@Override
 	public String createSpreadsheet(Spreadsheet sheet, String password) {
 
-		if( sheet == null || password == null) {
+		if( sheet == null || password == null)
 			throwWebAppException(Log, "Sheet or password null.", type, Response.Status.BAD_REQUEST);
-		}
 
 		if (sheet.getColumns() <= 0 || sheet.getRows() <= 0)
 			throwWebAppException(Log, "Invalid dimensions.", type, Response.Status.BAD_REQUEST);
 
-		String spreadsheetOwner = sheet.getOwner();
-
 		synchronized(this) {
 
+			String spreadsheetOwner = sheet.getOwner();
 
 			//TODO: Evitar ciclos de referencias
 
@@ -136,7 +134,6 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 			} catch (Exception e) {
 				throwWebAppException(Log, e.getMessage(), type, Response.Status.BAD_REQUEST);
 			}
-
 			if(!valid) throwWebAppException(Log, "Invalid password.", type, Response.Status.BAD_REQUEST);
 
 			String sheetId;
@@ -353,17 +350,14 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 
 	@Override
 	public void deleteUserSpreadsheets(String userId, String password) {
-
 		synchronized (this) {
 
 			boolean valid = true;
-
 			try {
 				valid = getLocalUsersClient().verifyUser(userId, password);
 			} catch (Exception e) {
 				throwWebAppException(Log, e.getMessage(), type, Response.Status.BAD_REQUEST);
 			}
-
 			if(!valid) throwWebAppException(Log, "Invalid password.", type, Response.Status.FORBIDDEN);
 
 			Set<String> sheets = spreadsheetOwners.get(userId);

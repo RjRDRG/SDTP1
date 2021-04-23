@@ -37,6 +37,7 @@ public class UsersRestServer {
 
 			Discovery discovery = new Discovery(  domain, SERVICE, serverURI);
 			discovery.startSendingAnnouncements();
+			discovery.startCollectingAnnouncements();
 
 			Log.info(String.format("%s Server ready @ %s\n",  SERVICE, serverURI));
 		
