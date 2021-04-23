@@ -13,10 +13,15 @@ import org.glassfish.jersey.client.ClientConfig;
 import tp1.api.Spreadsheet;
 import tp1.api.service.rest.RestSpreadsheets;
 import tp1.clients.SpreadsheetApiClient;
+import tp1.server.rest.UsersRestServer;
+
+import java.util.logging.Logger;
 
 public class SpreadsheetRestClient implements SpreadsheetApiClient {
 
     private final WebTarget target;
+
+    private static Logger Log = Logger.getLogger(SpreadsheetRestClient.class.getName());
 
     public SpreadsheetRestClient(String serverUrl) {
         ClientConfig config = new ClientConfig();

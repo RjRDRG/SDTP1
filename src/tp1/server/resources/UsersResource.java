@@ -48,7 +48,7 @@ public class UsersResource implements RestUsers, SoapUsers {
 
 		synchronized ( this ) {
 
-			String userId = user.getUserId() + "@" + domainId;
+			String userId = user.getUserId();// + "@" + domainId;
 
 			if(users.containsKey(userId)) {
 				throwWebAppException(Log, "User already exists.", type, Status.CONFLICT);
@@ -65,21 +65,25 @@ public class UsersResource implements RestUsers, SoapUsers {
 	public User getUser(String userId, String password) {
 		Log.info("getUser : user = " + userId + "; pwd = " + password);
 
-		if(userId == null || password == null) {
-			throwWebAppException(Log, "UserId or password null.", type, Status.BAD_REQUEST);
+		if(userId == null) {
+			throwWebAppException(Log, "UserId null.", type, Status.FORBIDDEN );
 		}
 
 		User user = users.get(userId);
 
 		if( user == null ) {
-			throwWebAppException(Log, "User does not exist.", type, Status.NOT_FOUND ); //Nao mudar mensagem de erro
+			throw new RuntimeException("fuck you sdfdsfdsfdsf--------------------------------------------------");
+			//throwWebAppException(Log, "User does not exist.", type, Status.NOT_FOUND ); //Nao mudar mensagem de erro
+		}
+		else {
+			throw new RuntimeException("fuck you shrek--------------------------------------------------");
 		}
 
-		if(!user.getPassword().equals(password)) {
+		/*if(!user.getPassword().equals(password)) {
 			throwWebAppException(Log, "Password is incorrect.", type, Status.FORBIDDEN );
 		}
 
-		return user;
+		return user;*/
 	}
 
 
@@ -102,9 +106,14 @@ public class UsersResource implements RestUsers, SoapUsers {
 				throwWebAppException(Log, "Password is incorrect.", type, Status.FORBIDDEN );
 			}
 
-			users.put(userId, new User(userId, user.getFullName(), user.getEmail(), user.getPassword()));
+			User newUser = new User(userId,
+					user.getFullName() == null ? oldUser.getFullName() : user.getFullName(),
+					user.getEmail() == null ? oldUser.getEmail() : user.getEmail(),
+					user.getPassword() == null ? oldUser.getPassword() : user.getPassword());
 
-			return oldUser;
+			users.put(userId, newUser);
+
+			return newUser;
 		}
 	}
 
@@ -113,8 +122,8 @@ public class UsersResource implements RestUsers, SoapUsers {
 	public User deleteUser(String userId, String password) {
 		Log.info("deleteUser : user = " + userId + "; pwd = " + password);
 
-		if(userId == null || password == null) {
-			throwWebAppException(Log, "UserId or password null.", type, Status.BAD_REQUEST );
+		if(userId == null ) {
+			throwWebAppException(Log, "UserId null.", type, Status.BAD_REQUEST );
 		}
 
 		synchronized ( this ) {
@@ -127,7 +136,6 @@ public class UsersResource implements RestUsers, SoapUsers {
 			if( !user.getPassword().equals( password)) {
 				throwWebAppException(Log, "Password is incorrect.", type, Status.FORBIDDEN );
 			}
-
 
 			return users.remove(userId);
 		}
@@ -146,7 +154,7 @@ public class UsersResource implements RestUsers, SoapUsers {
 			return new ArrayList<>(users.values());
 		}
 
-		return users.values().stream().filter(u -> u.getFullName().contains(pattern)).collect(Collectors.toList());
+		return users.values().stream().filter(u -> u.getFullName().toLowerCase().contains(pattern.toLowerCase())).collect(Collectors.toList());
 	}
 
 }

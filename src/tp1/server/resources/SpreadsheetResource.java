@@ -91,14 +91,18 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 
 	private UsersApiClient cachedUserClient;
 	private UsersApiClient getLocalUsersClient() {
-		if(cachedUserClient ==null) {
+		String sURL = null;
+
+		if(cachedUserClient == null) {
 			String serverUrl = discovery.knownUrisOf(domainId, UsersApiClient.SERVICE).stream()
 				.findAny()
 				.map(URI::toString)
 				.orElse(null);
 
+			sURL = serverUrl;
 			if(serverUrl != null) {
 				try {
+
 					if (serverUrl.contains("/rest"))
 						cachedUserClient = new UsersRestClient(serverUrl);
 					else
@@ -108,13 +112,15 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 				}
 			}
 		}
+		
+		if (true) throw new RuntimeException(sURL + "fuck you shrek--------------------------------------------------");
 		return cachedUserClient;
 	}
 
 	@Override
 	public String createSpreadsheet(Spreadsheet sheet, String password) {
 
-		if( sheet == null || password == null ) {
+		if( sheet == null || password == null) {
 			throwWebAppException(Log, "Sheet or password null.", type, Response.Status.BAD_REQUEST);
 		}
 
@@ -124,10 +130,11 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 
 			try {
 				boolean valid = getLocalUsersClient().verifyUser(sheet.getOwner(), password);
+
 				if(!valid)
 					throwWebAppException(Log, "Invalid password.", type, Response.Status.BAD_REQUEST);
 			} catch (Exception e) {
-				throwWebAppException(Log, "User not found.", type, Response.Status.BAD_REQUEST);
+				throwWebAppException(Log, e.getMessage(), type, Response.Status.BAD_REQUEST);
 			}
 
 			String sheetId;

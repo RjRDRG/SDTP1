@@ -25,14 +25,14 @@ public class SpreadsheetRestServer {
 
     public static void main(String[] args) {
         try {
-            String domain = args.length > 1 ? args[0] : "UnreliablePieceOfSht";
+            String domain = args.length > 0 ? args[0] : "UnreliablePieceOfSht";
 
             String ip = InetAddress.getLocalHost().getHostAddress();
-            String serverURI = String.format("http://%s:%s/rest", ip, PORT);
 
             ResourceConfig config = new ResourceConfig();
             config.register(new SpreadsheetResource(domain, WebServiceType.REST));
 
+            String serverURI = String.format("http://%s:%s/rest", ip, PORT);
             JdkHttpServerFactory.createHttpServer(URI.create(serverURI), config);
 
             Discovery discovery = new Discovery( domain, SERVICE ,serverURI);

@@ -47,6 +47,8 @@ public class UsersRestClient implements UsersApiClient {
                 .accept(MediaType.APPLICATION_JSON)
                 .get();
 
+        if (true) throw new RuntimeException(r.getStatus() + "fuck you!!!!! --------------------------------------------------");
+
         if( r.getStatus() == Response.Status.OK.getStatusCode() && r.hasEntity() ) {
             return true;
         }

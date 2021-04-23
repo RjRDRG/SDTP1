@@ -2,10 +2,7 @@ package tp1.discovery;
 
 import java.io.IOException;
 import java.net.*;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.logging.Logger;
 
 /**
@@ -132,6 +129,7 @@ public class Discovery {
 
 							servers.get(sn).add(URI.create(su));
 							timeStamps.put(sn, System.currentTimeMillis());
+
 						}
 					} catch (IOException e) {
 						// do nothing
