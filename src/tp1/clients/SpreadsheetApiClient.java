@@ -24,5 +24,5 @@ public interface SpreadsheetApiClient {
 
     void unshareSpreadsheet( String sheetId, String userId,  String password);
 
-    Set<String> getUserSpreadsheetIds(String userId, String password);
+    void deleteUserSpreadsheets(String userId, String password);
 }

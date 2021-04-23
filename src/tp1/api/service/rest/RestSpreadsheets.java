@@ -172,6 +172,6 @@ public interface RestSpreadsheets {
 	 * 		   400 if the login credentials are wrong
 	 */
 	@DELETE
-	@Path("/{userId}")
+	@Path("/spreadsheets/{userId}")
 	void deleteSpreadsheetIds(@PathParam("userId") String userId, @QueryParam("password") String password);
 }

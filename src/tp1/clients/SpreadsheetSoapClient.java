@@ -105,7 +105,7 @@ public class SpreadsheetSoapClient implements SpreadsheetApiClient {
     }
 
     @Override
-    public Set<String> getUserSpreadsheetIds(String userId, String password) {
-        return retry( () -> target.getUserSpreadsheetIds(userId, password) );
+    public void deleteUserSpreadsheets(String userId, String password) {
+        return retry( () -> target.deleteUserSpreadsheets(userId, password) );
     }
 }

@@ -32,8 +32,6 @@ public class SpreadsheetRestClient implements SpreadsheetApiClient {
     @Override
     public String createSpreadsheet(Spreadsheet sheet, String password) throws WebApplicationException  {
 
-        String ownerDomain = sheet.extractOwnerDomain();
-        System.out.println("--------------------DOMAIN: " + ownerDomain);
         Response r = target.queryParam("password", password).request()
                 .accept(MediaType.APPLICATION_JSON)
                 .post(Entity.entity(sheet, MediaType.APPLICATION_JSON));
@@ -121,6 +119,16 @@ public class SpreadsheetRestClient implements SpreadsheetApiClient {
                 .delete();
 
         if( r.getStatus() != Response.Status.OK.getStatusCode() && r.hasEntity() )
+            throw new WebApplicationException(r.getStatus());
+    }
+
+    @Override
+    public void deleteUserSpreadsheets(String userId, String password) {
+        Response r = target.path("spreadsheets").path(userId).queryParam("password", password).request()
+                .accept(MediaType.APPLICATION_JSON)
+                .delete();
+
+        if( r.getStatus() != Response.Status.OK.getStatusCode() )
             throw new WebApplicationException(r.getStatus());
     }
 }
