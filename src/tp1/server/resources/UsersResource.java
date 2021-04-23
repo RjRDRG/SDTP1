@@ -83,7 +83,6 @@ public class UsersResource implements RestUsers, SoapUsers {
 		}
 
 		synchronized ( this ) {
-
 			String userId = user.getUserId();
 
 			if(users.containsKey(userId)) {
