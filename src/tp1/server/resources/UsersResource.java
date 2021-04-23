@@ -138,9 +138,8 @@ public class UsersResource implements RestUsers, SoapUsers {
 			}
 
 			try {
-				getLocalSpreadsheetClient().deleteSpreadsheets(userId, password);
+				getLocalSpreadsheetClient().deleteUserSpreadsheets(userId, password);
 			} catch (Exception e) {
-				throwWebAppException(Log, "Could not delete spreadsheets.", type, Response.Status.BAD_REQUEST);
 			}
 
 			return users.remove(userId);

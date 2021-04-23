@@ -203,7 +203,7 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 		try {
 			valid = getLocalUsersClient().verifyUser(userId, password);
 		} catch (Exception e) {
-			throwWebAppException(Log, e.getMessage(), type, Response.Status.BAD_REQUEST);
+			throwWebAppException(Log, e.getMessage(), type, Response.Status.NOT_FOUND);
 		}
 
 		if(!valid) throwWebAppException(Log, "Invalid password.", type, Response.Status.FORBIDDEN);
