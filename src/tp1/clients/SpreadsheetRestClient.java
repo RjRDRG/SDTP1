@@ -68,7 +68,7 @@ public class SpreadsheetRestClient implements SpreadsheetApiClient {
     @Override
     public String[][] getSpreadsheetValues(String sheetId, String userId, String password) throws WebApplicationException {
 
-        Response r = target.path(sheetId).queryParam("userId", userId).queryParam("password", password).request()
+        Response r = target.path(sheetId).path("values").queryParam("userId", userId).queryParam("password", password).request()
                 .accept(MediaType.APPLICATION_JSON)
                 .get();
 
@@ -81,7 +81,7 @@ public class SpreadsheetRestClient implements SpreadsheetApiClient {
     @Override
     public String[][] getReferencedSpreadsheetValues(String sheetId, String userId, String range) throws WebApplicationException  {
 
-        Response r = target.path(sheetId).queryParam("userId", userId).queryParam("range",range).request()
+        Response r = target.path("reference").path(sheetId).queryParam("userId", userId).queryParam("range",range).request()
                 .accept(MediaType.APPLICATION_JSON)
                 .get();
 
@@ -94,9 +94,9 @@ public class SpreadsheetRestClient implements SpreadsheetApiClient {
     @Override
     public void updateCell(String sheetId, String cell, String rawValue, String userId, String password) throws WebApplicationException  {
 
-        Response r = target.path(sheetId).path(cell).queryParam("userId", userId).queryParam("password",  password).request()
+        Response r = target.path(sheetId).path(cell).queryParam("").queryParam("userId", userId).queryParam("password",  password).request()
                 .accept(MediaType.APPLICATION_JSON)
-                .put(Entity.entity(cell, MediaType.APPLICATION_JSON));
+                .put(Entity.entity(rawValue, MediaType.APPLICATION_JSON));
 
         if( r.getStatus() != Response.Status.OK.getStatusCode() )
             throw new WebApplicationException(r.getStatus());
@@ -104,7 +104,7 @@ public class SpreadsheetRestClient implements SpreadsheetApiClient {
 
     @Override
     public void shareSpreadsheet(String sheetId, String userId, String password) throws WebApplicationException  {
-        Response r = target.path(sheetId).path(userId).queryParam("password",  password).request()
+        Response r = target.path(sheetId).path("share").path(userId).queryParam("password",  password).request()
                 .accept(MediaType.APPLICATION_JSON)
                 .post(Entity.entity(userId, MediaType.APPLICATION_JSON));
 
@@ -114,7 +114,7 @@ public class SpreadsheetRestClient implements SpreadsheetApiClient {
 
     @Override
     public void unshareSpreadsheet(String sheetId, String userId, String password) throws WebApplicationException  {
-        Response r = target.path(sheetId).path(userId).queryParam("password",  password).request()
+        Response r = target.path(sheetId).path("share").path(userId).queryParam("password",  password).request()
                 .accept(MediaType.APPLICATION_JSON)
                 .delete();
 
