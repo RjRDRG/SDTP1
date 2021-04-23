@@ -181,6 +181,7 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 
 			if(!valid) throwWebAppException(Log, "Invalid password.", type, Response.Status.FORBIDDEN);
 
+			spreadsheetOwners.get(sheet.getOwner()).remove(sheetId);
 			spreadsheets.remove(sheetId);
 		}
 	}
