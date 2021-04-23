@@ -48,7 +48,7 @@ public class UsersResource implements RestUsers, SoapUsers {
 
 		synchronized ( this ) {
 
-			String userId = user.getUserId();// + "@" + domainId;
+			String userId = user.getUserId();
 
 			if(users.containsKey(userId)) {
 				throwWebAppException(Log, "User already exists.", type, Status.CONFLICT);
@@ -72,18 +72,15 @@ public class UsersResource implements RestUsers, SoapUsers {
 		User user = users.get(userId);
 
 		if( user == null ) {
-			throw new RuntimeException("fuck you sdfdsfdsfdsf--------------------------------------------------");
-			//throwWebAppException(Log, "User does not exist.", type, Status.NOT_FOUND ); //Nao mudar mensagem de erro
-		}
-		else {
-			throw new RuntimeException("fuck you shrek--------------------------------------------------");
+			throwWebAppException(Log, "User does not exist.", type, Status.NOT_FOUND ); //Nao mudar mensagem de erro
 		}
 
-		/*if(!user.getPassword().equals(password)) {
+
+		if(!user.getPassword().equals(password)) {
 			throwWebAppException(Log, "Password is incorrect.", type, Status.FORBIDDEN );
 		}
 
-		return user;*/
+		return user;
 	}
 
 

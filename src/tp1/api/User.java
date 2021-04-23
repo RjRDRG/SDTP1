@@ -71,9 +71,7 @@ public class User {
 		this.email = email;
 	}
 
-	public String getUserId() {
-		return userId;
-	}
+	public String getUserId() { return userId; }
 
 	public void setUserId(String userId) {
 		this.userId = userId;
@@ -100,10 +98,4 @@ public class User {
 		return "User [email=" + email + ", userId=" + userId + ", fullName=" + fullName + ", password=" + password
 				+ "]";
 	}
-
-	public static String extractDomain(String id) {
-		return id.split("@")[1];
-	}
-	
-	
 }

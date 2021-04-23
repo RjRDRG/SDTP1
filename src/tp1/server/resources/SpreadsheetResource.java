@@ -112,8 +112,7 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 				}
 			}
 		}
-		
-		if (true) throw new RuntimeException(sURL + "fuck you shrek--------------------------------------------------");
+
 		return cachedUserClient;
 	}
 
@@ -194,7 +193,16 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 			throwWebAppException(Log, "User " + userId + " does not have permissions to read this spreadsheet.", type, Response.Status.BAD_REQUEST);
 		}
 
-		if (!User.extractDomain(userId).equals(sheet.extractOwnerDomain())) {
+		boolean sameDomain = true;
+
+		try {
+			getLocalUsersClient().getUser(userId, password);
+		}
+		catch (Exception e) {
+			sameDomain = false;
+		}
+
+		if (!sameDomain) {
 			throwWebAppException(Log, "User " + userId + " does not have permissions to read this spreadsheet.", type, Response.Status.BAD_REQUEST);
 		}
 

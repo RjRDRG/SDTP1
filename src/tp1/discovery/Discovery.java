@@ -149,6 +149,6 @@ public class Discovery {
 	 * 
 	 */
 	public Set<URI> knownUrisOf(String domain, String service) {
-		return servers.get(domain+DOMAIN_DELIMITER+serviceName);
+		return servers.get(domain+DOMAIN_DELIMITER+service);
 	}
 }
