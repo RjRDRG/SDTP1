@@ -43,6 +43,10 @@ public class UsersRestClient implements UsersApiClient {
     @Override
     public Boolean verifyUser(String userId, String password) {
 
+        if( password == null) {
+            return false;
+        }
+
         Response r = target.path(userId).queryParam("password", password).request()
                 .accept(MediaType.APPLICATION_JSON)
                 .get();
@@ -50,7 +54,7 @@ public class UsersRestClient implements UsersApiClient {
         if( r.getStatus() == Response.Status.OK.getStatusCode() && r.hasEntity() ) {
             return true;
         }
-        if( r.getStatus() == Response.Status.FORBIDDEN.getStatusCode()) {
+        if( r.getStatus() == Response.Status.FORBIDDEN.getStatusCode() ) {
             return false;
         }
         else {

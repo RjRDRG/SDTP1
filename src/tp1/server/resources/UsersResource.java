@@ -65,16 +65,11 @@ public class UsersResource implements RestUsers, SoapUsers {
 	public User getUser(String userId, String password) {
 		Log.info("getUser : user = " + userId + "; pwd = " + password);
 
-		if(userId == null) {
-			throwWebAppException(Log, "UserId null.", type, Status.FORBIDDEN );
-		}
-
 		User user = users.get(userId);
 
 		if( user == null ) {
 			throwWebAppException(Log, "User does not exist.", type, Status.NOT_FOUND ); //Nao mudar mensagem de erro
 		}
-
 
 		if(!user.getPassword().equals(password)) {
 			throwWebAppException(Log, "Password is incorrect.", type, Status.FORBIDDEN );

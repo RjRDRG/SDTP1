@@ -124,14 +124,14 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 
 			//TODO: Evitar ciclos de referencias
 
+			boolean valid = true;
 			try {
-				boolean valid = getLocalUsersClient().verifyUser(sheet.getOwner(), password);
-
-				if(!valid)
-					throwWebAppException(Log, "Invalid password.", type, Response.Status.BAD_REQUEST);
+				valid = getLocalUsersClient().verifyUser(sheet.getOwner(), password);
 			} catch (Exception e) {
 				throwWebAppException(Log, e.getMessage(), type, Response.Status.BAD_REQUEST);
 			}
+
+			if(!valid) throwWebAppException(Log, "Invalid password.", type, Response.Status.BAD_REQUEST);
 
 			String sheetId;
 			do {
@@ -161,13 +161,14 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 				throwWebAppException(Log, "Sheet doesnt exist.", type, Response.Status.NOT_FOUND);
 			}
 
+			boolean valid = true;
 			try {
-				boolean valid = getLocalUsersClient().verifyUser(sheet.getOwner(), password);
-				if(!valid)
-					throwWebAppException(Log, "Invalid password.", type, Response.Status.FORBIDDEN);
+				valid = getLocalUsersClient().verifyUser(sheet.getOwner(), password);
 			} catch (Exception e) {
-				throwWebAppException(Log, "User not found.", type, Response.Status.BAD_REQUEST);
+				throwWebAppException(Log, e.getMessage(), type, Response.Status.BAD_REQUEST);
 			}
+
+			if(!valid) throwWebAppException(Log, "Invalid password.", type, Response.Status.FORBIDDEN);
 
 			spreadsheets.remove(sheetId);
 		}
@@ -176,41 +177,27 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 	@Override
 	public Spreadsheet getSpreadsheet(String sheetId, String userId, String password) {
 
-
-
-		if( sheetId == null || userId == null || password == null ) {
-			throwWebAppException(Log, "SheetId or userId or password null.", type, Response.Status.BAD_REQUEST);
+		if( sheetId == null || userId == null ) {
+			throwWebAppException(Log, "SheetId or userId null.", type, Response.Status.BAD_REQUEST);
 		}
 
 		Spreadsheet sheet = spreadsheets.get(sheetId);
 
 		if( sheet == null ) {
-			throwWebAppException(Log, "Sheet doesnt exist.", type, Response.Status.NOT_FOUND);
+			throwWebAppException(Log, "Sheet doesnt exist: " + sheetId, type, Response.Status.NOT_FOUND);
 		}
+
+		boolean valid = true;
+		try {
+			valid = getLocalUsersClient().verifyUser(userId, password);
+		} catch (Exception e) {
+			throwWebAppException(Log, e.getMessage(), type, Response.Status.BAD_REQUEST);
+		}
+
+		if(!valid) throwWebAppException(Log, "Invalid password.", type, Response.Status.FORBIDDEN);
 
 		if (!userId.equals(sheet.getOwner()) && !sheet.getSharedWith().contains(userId)) {
-			throwWebAppException(Log, "User " + userId + " does not have permissions to read this spreadsheet.", type, Response.Status.BAD_REQUEST);
-		}
-
-		boolean sameDomain = true;
-
-		try {
-			getLocalUsersClient().getUser(userId, password);
-		}
-		catch (Exception e) {
-			sameDomain = false;
-		}
-
-		if (!sameDomain) {
-			throwWebAppException(Log, "User " + userId + " does not have permissions to read this spreadsheet.", type, Response.Status.BAD_REQUEST);
-		}
-
-		try {
-			boolean valid = getLocalUsersClient().verifyUser(sheet.getOwner(), password);
-			if(!valid)
-				throwWebAppException(Log, "Invalid password.", type, Response.Status.FORBIDDEN);
-		} catch (Exception e) {
-			throwWebAppException(Log, "User not found.", type, Response.Status.NOT_FOUND);
+			throwWebAppException(Log, "User " + userId + " does not have permissions to read this spreadsheet.", type, Response.Status.FORBIDDEN);
 		}
 
 		return sheet;
@@ -298,13 +285,14 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 				throwWebAppException(Log, "Sheet doesnt exist.", type, Response.Status.NOT_FOUND);
 			}
 
+			boolean valid = true;
 			try {
-				boolean valid = getLocalUsersClient().verifyUser(sheet.getOwner(), password);
-				if(!valid)
-					throwWebAppException(Log, "Invalid password.", type, Response.Status.FORBIDDEN);
+				valid = getLocalUsersClient().verifyUser(sheet.getOwner(), password);
 			} catch (Exception e) {
-				throwWebAppException(Log, "User not found.", type, Response.Status.NOT_FOUND);
+				throwWebAppException(Log, e.getMessage(), type, Response.Status.BAD_REQUEST);
 			}
+
+			if(!valid) throwWebAppException(Log, "Invalid password.", type, Response.Status.FORBIDDEN);
 
 
 			Set<String> sharedWith = sheet.getSharedWith();
@@ -328,13 +316,14 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 
 			Spreadsheet sheet = spreadsheets.get(sheetId);
 
+			boolean valid = true;
 			try {
-				boolean valid = getLocalUsersClient().verifyUser(sheet.getOwner(), password);
-				if(!valid)
-					throwWebAppException(Log, "Invalid password.", type, Response.Status.FORBIDDEN);
+				valid = getLocalUsersClient().verifyUser(sheet.getOwner(), password);
 			} catch (Exception e) {
-				throwWebAppException(Log, "User not found.", type, Response.Status.NOT_FOUND);
+				throwWebAppException(Log, e.getMessage(), type, Response.Status.BAD_REQUEST);
 			}
+
+			if(!valid) throwWebAppException(Log, "Invalid password.", type, Response.Status.FORBIDDEN);
 
 			Set<String> sharedWith = sheet.getSharedWith();
 
