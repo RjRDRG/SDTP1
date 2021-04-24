@@ -9,7 +9,7 @@ import static tp1.api.service.util.Result.ErrorCode.NOT_AVAILABLE;
 
 public class SpreadsheetRetryClient implements SpreadsheetClient{
 
-    public final static int MAX_RETRIES = 5;
+    public final static int MAX_RETRIES = 10;
     public final static long RETRY_PERIOD = 1000;
 
     private final SpreadsheetClient client;

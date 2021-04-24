@@ -10,7 +10,7 @@ import static tp1.api.service.util.Result.ErrorCode.NOT_AVAILABLE;
 
 public class UsersRetryClient implements UsersClient{
 
-    public final static int MAX_RETRIES = 5;
+    public final static int MAX_RETRIES = 10;
     public final static long RETRY_PERIOD = 1000;
 
     private final UsersClient client;

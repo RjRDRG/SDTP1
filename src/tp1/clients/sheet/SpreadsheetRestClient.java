@@ -31,109 +31,145 @@ public class SpreadsheetRestClient implements SpreadsheetClient {
 
     @Override
     public Result<String> createSpreadsheet(Spreadsheet sheet, String password)   {
-        Response r = target.queryParam("password", password).request()
-                .accept(MediaType.APPLICATION_JSON)
-                .post(Entity.entity(sheet, MediaType.APPLICATION_JSON));
+        try {
+            Response r = target.queryParam("password", password).request()
+                    .accept(MediaType.APPLICATION_JSON)
+                    .post(Entity.entity(sheet, MediaType.APPLICATION_JSON));
 
-        if (r.getStatus() == Response.Status.OK.getStatusCode() && r.hasEntity())
-            return Result.ok(r.readEntity(String.class));
-        else
-            return Result.error(Response.Status.fromStatusCode(r.getStatus()), new WebApplicationException(r.getStatus()));
+            if (r.getStatus() == Response.Status.OK.getStatusCode() && r.hasEntity())
+                return Result.ok(r.readEntity(String.class));
+            else
+                return Result.error(Response.Status.fromStatusCode(r.getStatus()), new WebApplicationException(r.getStatus()));
+        } catch (Exception e) {
+            return Result.error(Result.ErrorCode.NOT_AVAILABLE, e);
+        }
     }
 
     @Override
     public Result<Void> deleteSpreadsheet(String sheetId, String password)  {
-        Response r = target.path(sheetId).queryParam("password", password).request()
-                .accept(MediaType.APPLICATION_JSON)
-                .delete();
+        try {
+            Response r = target.path(sheetId).queryParam("password", password).request()
+                    .accept(MediaType.APPLICATION_JSON)
+                    .delete();
 
-        if (r.getStatus() != Response.Status.OK.getStatusCode())
-            return Result.error(Response.Status.fromStatusCode(r.getStatus()), new WebApplicationException(r.getStatus()));
-        else
-            return Result.ok();
+            if (r.getStatus() != Response.Status.OK.getStatusCode())
+                return Result.error(Response.Status.fromStatusCode(r.getStatus()), new WebApplicationException(r.getStatus()));
+            else
+                return Result.ok();
+        } catch (Exception e) {
+            return Result.error(Result.ErrorCode.NOT_AVAILABLE, e);
+        }
     }
 
     @Override
     public Result<Spreadsheet> getSpreadsheet(String sheetId, String userId, String password)  {
-        Response r = target.path(sheetId).queryParam("userId", userId).queryParam("password", password).request()
-                .accept(MediaType.APPLICATION_JSON)
-                .get();
+        try {
+            Response r = target.path(sheetId).queryParam("userId", userId).queryParam("password", password).request()
+                    .accept(MediaType.APPLICATION_JSON)
+                    .get();
 
-        if (r.getStatus() == Response.Status.OK.getStatusCode() && r.hasEntity())
-            return Result.ok(r.readEntity(Spreadsheet.class));
-        else
-            return Result.error(Response.Status.fromStatusCode(r.getStatus()), new WebApplicationException(r.getStatus()));
+            if (r.getStatus() == Response.Status.OK.getStatusCode() && r.hasEntity())
+                return Result.ok(r.readEntity(Spreadsheet.class));
+            else
+                return Result.error(Response.Status.fromStatusCode(r.getStatus()), new WebApplicationException(r.getStatus()));
+        } catch (Exception e) {
+            return Result.error(Result.ErrorCode.NOT_AVAILABLE, e);
+        }
     }
 
     @Override
     public Result<String[][]> getSpreadsheetValues(String sheetId, String userId, String password)  {
-        Response r = target.path(sheetId).path("values").queryParam("userId", userId).queryParam("password", password).request()
-                .accept(MediaType.APPLICATION_JSON)
-                .get();
+        try {
+            Response r = target.path(sheetId).path("values").queryParam("userId", userId).queryParam("password", password).request()
+                    .accept(MediaType.APPLICATION_JSON)
+                    .get();
 
-        if (r.getStatus() == Response.Status.OK.getStatusCode() && r.hasEntity())
-            return Result.ok(r.readEntity(new GenericType<String[][]>() {}));
-        else
-            return Result.error(Response.Status.fromStatusCode(r.getStatus()), new WebApplicationException(r.getStatus()));
+            if (r.getStatus() == Response.Status.OK.getStatusCode() && r.hasEntity())
+                return Result.ok(r.readEntity(new GenericType<String[][]>() {}));
+            else
+                return Result.error(Response.Status.fromStatusCode(r.getStatus()), new WebApplicationException(r.getStatus()));
+        } catch (Exception e) {
+            return Result.error(Result.ErrorCode.NOT_AVAILABLE, e);
+        }
     }
 
     @Override
     public Result<String[][]> getReferencedSpreadsheetValues(String sheetId, String userId, String range)   {
-        Response r = target.path("reference").path(sheetId).queryParam("userId", userId).queryParam("range", range).request()
-                .accept(MediaType.APPLICATION_JSON)
-                .get();
+        try {
+            Response r = target.path("reference").path(sheetId).queryParam("userId", userId).queryParam("range", range).request()
+                    .accept(MediaType.APPLICATION_JSON)
+                    .get();
 
-        if (r.getStatus() == Response.Status.OK.getStatusCode() && r.hasEntity())
-            return Result.ok(r.readEntity(new GenericType<String[][]>() {}));
-        else
-            return Result.error(Response.Status.fromStatusCode(r.getStatus()), new WebApplicationException(r.getStatus()));
+            if (r.getStatus() == Response.Status.OK.getStatusCode() && r.hasEntity())
+                return Result.ok(r.readEntity(new GenericType<String[][]>() {}));
+            else
+                return Result.error(Response.Status.fromStatusCode(r.getStatus()), new WebApplicationException(r.getStatus()));
+        } catch (Exception e) {
+            return Result.error(Result.ErrorCode.NOT_AVAILABLE, e);
+        }
     }
 
     @Override
     public Result<Void> updateCell(String sheetId, String cell, String rawValue, String userId, String password)   {
-        Response r = target.path(sheetId).path(cell).queryParam("").queryParam("userId", userId).queryParam("password", password).request()
-                .accept(MediaType.APPLICATION_JSON)
-                .put(Entity.entity(rawValue, MediaType.APPLICATION_JSON));
+        try {
+            Response r = target.path(sheetId).path(cell).queryParam("").queryParam("userId", userId).queryParam("password", password).request()
+                    .accept(MediaType.APPLICATION_JSON)
+                    .put(Entity.entity(rawValue, MediaType.APPLICATION_JSON));
 
-        if (r.getStatus() != Response.Status.OK.getStatusCode())
-            return Result.error(Response.Status.fromStatusCode(r.getStatus()), new WebApplicationException(r.getStatus()));
-        else
-            return Result.ok();
+            if (r.getStatus() != Response.Status.OK.getStatusCode())
+                return Result.error(Response.Status.fromStatusCode(r.getStatus()), new WebApplicationException(r.getStatus()));
+            else
+                return Result.ok();
+        } catch (Exception e) {
+            return Result.error(Result.ErrorCode.NOT_AVAILABLE, e);
+        }
     }
 
     @Override
     public Result<Void> shareSpreadsheet(String sheetId, String userId, String password)   {
-        Response r = target.path(sheetId).path("share").path(userId).queryParam("password", password).request()
-                .accept(MediaType.APPLICATION_JSON)
-                .post(Entity.entity(userId, MediaType.APPLICATION_JSON));
+        try {
+            Response r = target.path(sheetId).path("share").path(userId).queryParam("password", password).request()
+                    .accept(MediaType.APPLICATION_JSON)
+                    .post(Entity.entity(userId, MediaType.APPLICATION_JSON));
 
-        if (r.getStatus() != Response.Status.OK.getStatusCode() && r.hasEntity())
-            return Result.error(Response.Status.fromStatusCode(r.getStatus()), new WebApplicationException(r.getStatus()));
-        else
-            return Result.ok();
+            if (r.getStatus() != Response.Status.OK.getStatusCode() && r.hasEntity())
+                return Result.error(Response.Status.fromStatusCode(r.getStatus()), new WebApplicationException(r.getStatus()));
+            else
+                return Result.ok();
+        } catch (Exception e) {
+            return Result.error(Result.ErrorCode.NOT_AVAILABLE, e);
+        }
     }
 
     @Override
     public Result<Void> unshareSpreadsheet(String sheetId, String userId, String password) {
-        Response r = target.path(sheetId).path("share").path(userId).queryParam("password", password).request()
-                .accept(MediaType.APPLICATION_JSON)
-                .delete();
+        try {
+            Response r = target.path(sheetId).path("share").path(userId).queryParam("password", password).request()
+                    .accept(MediaType.APPLICATION_JSON)
+                    .delete();
 
-        if (r.getStatus() != Response.Status.OK.getStatusCode() && r.hasEntity())
-            return Result.error(Response.Status.fromStatusCode(r.getStatus()), new WebApplicationException(r.getStatus()));
-        else
-            return Result.ok();
+            if (r.getStatus() != Response.Status.OK.getStatusCode() && r.hasEntity())
+                return Result.error(Response.Status.fromStatusCode(r.getStatus()), new WebApplicationException(r.getStatus()));
+            else
+                return Result.ok();
+        } catch (Exception e) {
+            return Result.error(Result.ErrorCode.NOT_AVAILABLE, e);
+        }
     }
 
     @Override
     public Result<Void> deleteUserSpreadsheets(String userId, String password) {
-        Response r = target.path("spreadsheets").path(userId).queryParam("password", password).request()
-                .accept(MediaType.APPLICATION_JSON)
-                .delete();
+        try {
+            Response r = target.path("spreadsheets").path(userId).queryParam("password", password).request()
+                    .accept(MediaType.APPLICATION_JSON)
+                    .delete();
 
-        if (r.getStatus() != Response.Status.OK.getStatusCode())
-            return Result.error(Response.Status.fromStatusCode(r.getStatus()), new WebApplicationException(r.getStatus()));
-        else
-            return Result.ok();
+            if (r.getStatus() != Response.Status.OK.getStatusCode())
+                return Result.error(Response.Status.fromStatusCode(r.getStatus()), new WebApplicationException(r.getStatus()));
+            else
+                return Result.ok();
+        } catch (Exception e) {
+            return Result.error(Result.ErrorCode.NOT_AVAILABLE, e);
+        }
     }
 }
