@@ -41,14 +41,14 @@ public class Discovery {
 	private static final String URI_DELIMITER = "\t";
 	private static final String SERVICE_DELIMITER = ":";
 
-	private InetSocketAddress addr;
-	private String domainId;
-	private String serviceName;
-	private String serviceURI;
+	private final InetSocketAddress addr;
+	private final String domainId;
+	private final String serviceName;
+	private final String serviceURI;
 	private MulticastSocket ms;
 
-	private Map<String, SpreadsheetClient> spreadsheetClients = new ConcurrentHashMap<>();
-	private Map<String, UsersClient> usersClients = new ConcurrentHashMap<>();
+	private final Map<String, SpreadsheetClient> spreadsheetClients = new HashMap<>();
+	private final Map<String, UsersClient> usersClients = new HashMap<>();
 
 	/**
 	 * @param  serviceName the name of the service to announce
@@ -59,6 +59,7 @@ public class Discovery {
 		this.domainId = domainId;
 		this.serviceName = serviceName;
 		this.serviceURI  = serviceURI;
+		this.ms = null;
 	}
 
 	/**
@@ -127,12 +128,11 @@ public class Discovery {
 							String sn = msgElems[0], su = msgElems[1];
 
 							URI uri = URI.create(su);
-							String domain = sn.split(SERVICE_DELIMITER)[0];
-							String service = sn.split(SERVICE_DELIMITER)[1];
+							String[] split = sn.split(SERVICE_DELIMITER);
 
-							this.addClient(domain,service,uri.toString());
+							this.addClient(split[0],split[1],uri.toString());
 						}
-					} catch (IOException e) {
+					} catch (IOException ignored) {
 					}
 				}
 			}).start();

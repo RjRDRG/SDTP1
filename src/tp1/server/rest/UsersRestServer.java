@@ -25,7 +25,7 @@ public class UsersRestServer {
 	
 	public static void main(String[] args) {
 		try {
-			String domain = args.length > 0 ? args[0] : "UnreliablePieceOfSht";
+			String domain = args.length > 0 ? args[0] : "afasfasfafasf";
 
 			String ip = InetAddress.getLocalHost().getHostAddress();
 

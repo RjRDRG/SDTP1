@@ -30,7 +30,7 @@ public class UsersSoapServer {
 
     public static void main(String[] args) {
         try {
-            String domain = args.length > 0 ? args[0] : "OutdatedPieceOfSht";
+            String domain = args.length > 0 ? args[0] : "asfasfasfasfas";
 
             String ip = InetAddress.getLocalHost().getHostAddress();
             String serverURI = String.format("http://%s:%s/soap", ip, PORT);

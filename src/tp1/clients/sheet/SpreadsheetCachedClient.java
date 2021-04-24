@@ -25,7 +25,7 @@ public class SpreadsheetCachedClient implements SpreadsheetClient{
         this.sheetsCache = new HashMap<>();
         this.engine = SpreadsheetEngineImpl.getInstance();
 
-        //startCollecting();
+        startCollecting();
     }
 
     public SpreadsheetCachedClient(String serverUrl) throws Exception{
@@ -39,7 +39,7 @@ public class SpreadsheetCachedClient implements SpreadsheetClient{
         this.sheetsCache = new HashMap<>();
         this.engine = SpreadsheetEngineImpl.getInstance();
 
-        //startCollecting();
+        startCollecting();
     }
 
     private void startCollecting() {
