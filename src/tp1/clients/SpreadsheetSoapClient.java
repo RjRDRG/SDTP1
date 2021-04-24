@@ -15,10 +15,10 @@ public class SpreadsheetSoapClient implements SpreadsheetApiClient {
 
     public final static String SPREADSHEETS_WSDL = "/spreadsheets/?wsdl";
 
-    public final static int MAX_RETRIES = 3;
+    public final static int MAX_RETRIES = 5;
     public final static long RETRY_PERIOD = 1000;
-    public final static int CONNECTION_TIMEOUT = 1000;
-    public final static int REPLY_TIMEOUT = 600;
+    public final static int CONNECTION_TIMEOUT = 10000;
+    public final static int REPLY_TIMEOUT = 1000;
 
     public final SoapSpreadsheets target;
 
