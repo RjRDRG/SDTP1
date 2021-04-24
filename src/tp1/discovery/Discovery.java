@@ -119,8 +119,6 @@ public class Discovery {
 						String[] msgElems = msg.split(URI_DELIMITER);
 
 						if( msgElems.length == 2) {	//periodic announcement
-							System.out.printf( "FROM %s (%s) : %s\n", pkt.getAddress().getCanonicalHostName(),
-									pkt.getAddress().getHostAddress(), msg);
 
 							String sn = msgElems[0], su = msgElems[1];
 

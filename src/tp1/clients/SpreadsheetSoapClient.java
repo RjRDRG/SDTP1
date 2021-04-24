@@ -46,7 +46,7 @@ public class SpreadsheetSoapClient implements SpreadsheetApiClient {
             try {
                 return supplier.get();
             } catch (SheetsException e) {
-                exception = new SheetsException(e.getMessage());
+                exception = e;
                 break;
             } catch (Exception e) {
                 exception = new SheetsException(e.getMessage());

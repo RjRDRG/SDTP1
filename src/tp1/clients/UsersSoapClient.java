@@ -48,7 +48,7 @@ public class UsersSoapClient implements UsersApiClient {
             try {
                 return supplier.get();
             } catch (UsersException e) {
-                exception = new UsersException(e.getMessage());
+                exception = e;
                 break;
             } catch (Exception e) {
                 exception = new UsersException(e.getMessage());

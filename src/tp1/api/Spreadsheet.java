@@ -3,6 +3,7 @@ package tp1.api;
 import java.util.HashSet;
 import java.util.Optional;
 import java.util.Set;
+import java.util.logging.Logger;
 
 import tp1.api.engine.AbstractSpreadsheet;
 import tp1.server.resources.SpreadsheetResource;
@@ -175,13 +176,16 @@ public class Spreadsheet implements AbstractSpreadsheet {
 		return rawValues[row][col];
 	}
 
+	private static Logger Log = Logger.getLogger(Spreadsheet.class.getName());
+
 	@Override
 	public String[][] rangeValues(String sheetURL, String range) {
 		try {
 			String[] parts = sheetURL.split("#id#");
 			String domainId = parts[0];
 			String otherSheetId = parts[1];
-			return SpreadsheetResource.getRemoteSpreadsheetClient(domainId).getReferencedSpreadsheetValues(otherSheetId, owner, range);
+
+			return SpreadsheetResource.getRemoteSpreadsheetClient(domainId).getReferencedSpreadsheetValues(otherSheetId, owner+"@"+this.sheetURL.split("#id#")[0], range);
 		} catch (Exception e) {
 			e.printStackTrace();
 			return null;

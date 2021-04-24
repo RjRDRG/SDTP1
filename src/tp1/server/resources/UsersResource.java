@@ -13,10 +13,7 @@ import tp1.discovery.Discovery;
 import tp1.server.WebServiceType;
 
 import java.net.URI;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
@@ -73,7 +70,7 @@ public class UsersResource implements RestUsers, SoapUsers {
 		return cachedSpreadsheetClient;
 	}
 
-	public static void throwWebAppException(Logger Log, String msg, WebServiceType type, Status status) throws UsersException {
+	public static void throwWebAppException(String msg, WebServiceType type, Status status) throws UsersException {
 		if(type == SOAP)
 			throw new UsersException(msg);
 		else
@@ -83,18 +80,16 @@ public class UsersResource implements RestUsers, SoapUsers {
 
 	@Override
 	public String createUser(User user) throws UsersException {
-		Log.info("createUser : " + user);
-
 		if(user.getUserId() == null || user.getPassword() == null || user.getFullName() == null || 
 				user.getEmail() == null) {
-			throwWebAppException(Log, "User object invalid.", type, Status.BAD_REQUEST );
+			throwWebAppException( "User object invalid.", type, Status.BAD_REQUEST );
 		}
 
 		synchronized ( this ) {
 			String userId = user.getUserId();
 
 			if(users.containsKey(userId)) {
-				throwWebAppException(Log, "User already exists.", type, Status.CONFLICT);
+				throwWebAppException( "User already exists.", type, Status.CONFLICT);
 			}
 
 			users.put(userId, user);
@@ -106,16 +101,14 @@ public class UsersResource implements RestUsers, SoapUsers {
 
 	@Override
 	public User getUser(String userId, String password) throws UsersException {
-		Log.info("getUser : user = " + userId + "; pwd = " + password);
-
 		User user = users.get(userId);
 
 		if( user == null ) {
-			throwWebAppException(Log, "User does not exist.", type, Status.NOT_FOUND ); //Nao mudar mensagem de erro
+			throwWebAppException( "User does not exist.", type, Status.NOT_FOUND ); //Nao mudar mensagem de erro
 		}
 
 		if(!user.getPassword().equals(password)) {
-			throwWebAppException(Log, "Password is incorrect.", type, Status.FORBIDDEN );
+			throwWebAppException( "Password is incorrect.", type, Status.FORBIDDEN );
 		}
 
 		return user;
@@ -124,21 +117,19 @@ public class UsersResource implements RestUsers, SoapUsers {
 
 	@Override
 	public User updateUser(String userId, String password, User user) throws UsersException {
-		Log.info("updateUser : user = " + userId + "; pwd = " + password + " ; user = " + user);
-
 		if(userId == null || password == null) {
-			throwWebAppException(Log, "UserId or password null.", type, Status.BAD_REQUEST );
+			throwWebAppException( "UserId or password null.", type, Status.BAD_REQUEST );
 		}
 
 		synchronized ( this ) {
 			User oldUser = users.get(userId);
 
 			if( oldUser == null ) {
-				throwWebAppException(Log, "User does not exist.", type, Status.NOT_FOUND );
+				throwWebAppException( "User does not exist.", type, Status.NOT_FOUND );
 			}
 
 			if( !oldUser.getPassword().equals( password)) {
-				throwWebAppException(Log, "Password is incorrect.", type, Status.FORBIDDEN );
+				throwWebAppException( "Password is incorrect.", type, Status.FORBIDDEN );
 			}
 
 			User newUser = new User(userId,
@@ -155,21 +146,19 @@ public class UsersResource implements RestUsers, SoapUsers {
 
 	@Override
 	public User deleteUser(String userId, String password) throws UsersException {
-		Log.info("deleteUser : user = " + userId + "; pwd = " + password);
-
 		if(userId == null ) {
-			throwWebAppException(Log, "UserId null.", type, Status.BAD_REQUEST );
+			throwWebAppException( "UserId null.", type, Status.BAD_REQUEST );
 		}
 
 		synchronized ( this ) {
 			User user = users.get(userId);
 
 			if( user == null ) {
-				throwWebAppException(Log, "User does not exist.", type, Status.NOT_FOUND );
+				throwWebAppException( "User does not exist.", type, Status.NOT_FOUND );
 			}
 
 			if( !user.getPassword().equals( password)) {
-				throwWebAppException(Log, "Password is incorrect.", type, Status.FORBIDDEN );
+				throwWebAppException( "Password is incorrect.", type, Status.FORBIDDEN );
 			}
 
 			try {
@@ -183,18 +172,25 @@ public class UsersResource implements RestUsers, SoapUsers {
 
 
 	@Override
-	public List<User> searchUsers(String pattern) {
-		Log.info("searchUsers : pattern = " + pattern);
+	public List<User> searchUsers(String pattern) throws UsersException {
 
-		if(users.isEmpty()) {
+		if (users.isEmpty()) {
 			return new ArrayList<>();
 		}
 
-		if( pattern == null || pattern.isEmpty() ) {
+		if (pattern == null || pattern.isEmpty()) {
 			return new ArrayList<>(users.values());
 		}
 
-		return users.values().stream().filter(u -> u.getFullName().toLowerCase().contains(pattern.toLowerCase())).collect(Collectors.toList());
+		synchronized (this) {
+			List<User> result = new LinkedList<>();
+			for (User u : users.values()) {
+				if (u.getFullName().toLowerCase().contains(pattern.toLowerCase()))
+					result.add(u);
+			}
+
+			return result;
+		}
 	}
 
 }
