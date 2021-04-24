@@ -15,6 +15,10 @@ public class UsersRetryClient implements UsersClient{
 
     private final UsersClient client;
 
+    public UsersRetryClient(UsersClient client) {
+        this.client = client;
+    }
+
     public UsersRetryClient(String serverUrl) throws Exception {
         if (serverUrl.contains("/rest"))
             client = new UsersRestClient(serverUrl);

@@ -29,20 +29,20 @@ public class UsersRestServer {
 
 			String ip = InetAddress.getLocalHost().getHostAddress();
 
+			String serverURI = String.format("http://%s:%s/rest", ip, PORT);
+
 			ResourceConfig config = new ResourceConfig();
 			config.register(new UsersResource(domain, WebServiceType.REST));
 
-			String serverURI = String.format("http://%s:%s/rest", ip, PORT);
 			JdkHttpServerFactory.createHttpServer(URI.create(serverURI), config);
 
-			Discovery discovery = new Discovery(  domain, SERVICE, serverURI);
+			Discovery discovery = new Discovery( domain, SERVICE ,serverURI);
+
 			UsersResource.setDiscovery(discovery);
 			discovery.startSendingAnnouncements();
 			discovery.startCollectingAnnouncements();
 
 			Log.info(String.format("%s Server ready @ %s\n",  SERVICE, serverURI));
-		
-		//More code can be executed here...
 		} catch( Exception e) {
 			Log.severe(e.getMessage());
 		}

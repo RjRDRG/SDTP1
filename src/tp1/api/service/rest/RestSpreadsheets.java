@@ -11,6 +11,9 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import tp1.api.Spreadsheet;
+import tp1.api.User;
+
+import java.util.List;
 
 
 @Path(RestSpreadsheets.PATH)
@@ -172,4 +175,15 @@ public interface RestSpreadsheets {
 	@DELETE
 	@Path("/spreadsheets/{userId}")
 	void deleteUserSpreadsheets(@PathParam("userId") String userId, @QueryParam("password") String password) throws Exception;
+
+
+	/**
+	 * Returns the list of spreadsheets
+	 * @return 200 when the search was successful, regardless of the number of hits (including 0 hits).
+	 *         400 otherwise.
+	 */
+	@GET
+	@Path("/spreadsheets/all")
+	@Produces(MediaType.APPLICATION_JSON)
+	List<Spreadsheet> getSpreadsheets() throws Exception;
 }

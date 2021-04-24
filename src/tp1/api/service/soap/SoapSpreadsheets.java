@@ -2,7 +2,12 @@ package tp1.api.service.soap;
 
 import jakarta.jws.WebMethod;
 import jakarta.jws.WebService;
+import jakarta.ws.rs.GET;
+import jakarta.ws.rs.Produces;
+import jakarta.ws.rs.core.MediaType;
 import tp1.api.Spreadsheet;
+
+import java.util.List;
 
 @WebService(serviceName=SoapSpreadsheets.NAME, targetNamespace=SoapSpreadsheets.NAMESPACE, endpointInterface=SoapSpreadsheets.INTERFACE)
 public interface SoapSpreadsheets {
@@ -110,5 +115,13 @@ public interface SoapSpreadsheets {
 	 */
 	@WebMethod
 	void deleteUserSpreadsheets(String userId, String password) throws SheetsException;
+
+	/**
+	 * Returns the list of spreadsheets
+	 * @return 200 when the search was successful, regardless of the number of hits (including 0 hits).
+	 *         400 otherwise.
+	 */
+	@WebMethod
+	List<Spreadsheet> getSpreadsheets() throws SheetsException;
 
 }

@@ -1,8 +1,15 @@
 package tp1.discovery;
 
+import tp1.clients.sheet.SpreadsheetCachedClient;
+import tp1.clients.sheet.SpreadsheetClient;
+import tp1.clients.user.UsersCachedClient;
+import tp1.clients.user.UsersClient;
+
 import java.io.IOException;
 import java.net.*;
 import java.util.*;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.function.Consumer;
 import java.util.logging.Logger;
 
 /**
@@ -28,20 +35,20 @@ public class Discovery {
 	
 	
 	// The pre-aggreed multicast endpoint assigned to perform discovery. 
-	static final InetSocketAddress DISCOVERY_ADDR = new InetSocketAddress("226.226.226.226", 2266);
-	static final int DISCOVERY_PERIOD = 1000;
-	static final int DISCOVERY_TIMEOUT = 5000;
+	private static final InetSocketAddress DISCOVERY_ADDR = new InetSocketAddress("226.226.226.226", 2266);
+	private static final int DISCOVERY_PERIOD = 1000;
 
 	private static final String URI_DELIMITER = "\t";
-	private static final String DOMAIN_DELIMITER = ":";
+	private static final String SERVICE_DELIMITER = ":";
 
 	private InetSocketAddress addr;
 	private String domainId;
 	private String serviceName;
 	private String serviceURI;
-	private Map<String, Set<URI>> servers;
-	private Map<String, Long> timeStamps;
 	private MulticastSocket ms;
+
+	private Map<String, SpreadsheetClient> spreadsheetClients = new ConcurrentHashMap<>();
+	private Map<String, UsersClient> usersClients = new ConcurrentHashMap<>();
 
 	/**
 	 * @param  serviceName the name of the service to announce
@@ -52,9 +59,6 @@ public class Discovery {
 		this.domainId = domainId;
 		this.serviceName = serviceName;
 		this.serviceURI  = serviceURI;
-		this.servers = new HashMap<String, Set<URI>>();
-		this.timeStamps = new HashMap<String, Long>();
-		this.ms = null;
 	}
 
 	/**
@@ -71,7 +75,7 @@ public class Discovery {
 	public void startSendingAnnouncements() {
 		Log.info(String.format("Starting Discovery announcements on: %s for: %s -> %s\n", addr, serviceName, serviceURI));
 
-		byte[] announceBytes = (domainId+ DOMAIN_DELIMITER +serviceName+ URI_DELIMITER +serviceURI).getBytes();
+		byte[] announceBytes = (domainId+ SERVICE_DELIMITER +serviceName+ URI_DELIMITER +serviceURI).getBytes();
 		DatagramPacket announcePkt = new DatagramPacket(announceBytes, announceBytes.length, addr);
 
 		try {
@@ -122,15 +126,13 @@ public class Discovery {
 
 							String sn = msgElems[0], su = msgElems[1];
 
-							if (!servers.containsKey(sn))
-								servers.put(sn, new HashSet<URI>());
+							URI uri = URI.create(su);
+							String domain = sn.split(SERVICE_DELIMITER)[0];
+							String service = sn.split(SERVICE_DELIMITER)[1];
 
-							servers.get(sn).add(URI.create(su));
-							timeStamps.put(sn, System.currentTimeMillis());
-
+							this.addClient(domain,service,uri.toString());
 						}
 					} catch (IOException e) {
-						// do nothing
 					}
 				}
 			}).start();
@@ -139,15 +141,31 @@ public class Discovery {
 		}
 	}
 
-	/**
-	 * Returns the known servers for a service.
-	 * 
-	 * @param  domain the domain of the service being discovered
-	 * @param  service the name of the service being discovered
-	 * @return an array of URI with the service instances discovered.
-	 * 
-	 */
-	public Set<URI> knownUrisOf(String domain, String service) {
-		return servers.get(domain+DOMAIN_DELIMITER+service);
+	public void addClient(String domain, String service, String serverUrl) {
+		if(domain.equals(domainId) && service.equals(serviceName))
+			return;
+
+		if(service.equals(UsersClient.SERVICE) && !usersClients.containsKey(domain)) {
+			try {
+				UsersCachedClient client = new UsersCachedClient(serverUrl);
+				usersClients.put(domainId, client);
+			} catch (Exception ignored) {
+			}
+		}
+		else if(service.equals(SpreadsheetClient.SERVICE) && !spreadsheetClients.containsKey(domain)) {
+			try {
+				SpreadsheetCachedClient client = new SpreadsheetCachedClient(serverUrl);
+				spreadsheetClients.put(domainId, client);
+			} catch (Exception ignored) {
+			}
+		}
+	}
+
+	public UsersClient getUserClient(String domainId) {
+		return usersClients.get(domainId);
+	}
+
+	public SpreadsheetClient getSpreadsheetClient(String domainId) {
+		return spreadsheetClients.get(domainId);
 	}
 }

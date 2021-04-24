@@ -2,7 +2,9 @@ package tp1.server.soap;
 
 import com.sun.net.httpserver.HttpServer;
 import jakarta.xml.ws.Endpoint;
+import tp1.clients.sheet.SpreadsheetClient;
 import tp1.discovery.Discovery;
+import tp1.resources.SpreadsheetResource;
 import tp1.server.WebServiceType;
 import tp1.resources.UsersResource;
 import tp1.server.rest.UsersRestServer;
@@ -40,7 +42,8 @@ public class UsersSoapServer {
             soapUsersEndpoint.publish(server.createContext (SOAP_USERS_PATH));
             server.start();
 
-            Discovery discovery = new Discovery(  domain, SERVICE, serverURI);
+            Discovery discovery = new Discovery( domain, SERVICE ,serverURI);
+
             UsersResource.setDiscovery(discovery);
             discovery.startSendingAnnouncements();
             discovery.startCollectingAnnouncements();

@@ -33,7 +33,6 @@ public class SpreadsheetSoapServer {
             String ip = InetAddress.getLocalHost().getHostAddress();
             String serverURI = String.format("http://%s:%s/soap", ip, PORT);
 
-
             HttpServer server = HttpServer.create(new InetSocketAddress(ip, PORT), 0);
 
             server.setExecutor(Executors.newCachedThreadPool());
@@ -41,7 +40,8 @@ public class SpreadsheetSoapServer {
             soapUsersEndpoint.publish(server.createContext(SOAP_USERS_PATH));
             server.start();
 
-            Discovery discovery = new Discovery( domain, SERVICE, serverURI);
+            Discovery discovery = new Discovery( domain, SERVICE ,serverURI);
+
             SpreadsheetResource.setDiscovery(discovery);
             discovery.startSendingAnnouncements();
             discovery.startCollectingAnnouncements();

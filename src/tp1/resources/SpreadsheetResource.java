@@ -12,10 +12,10 @@ import tp1.api.service.rest.RestSpreadsheets;
 import tp1.api.service.soap.SheetsException;
 import tp1.api.service.soap.SoapSpreadsheets;
 import tp1.api.service.util.Result;
+
 import tp1.clients.sheet.SpreadsheetClient;
-import tp1.clients.sheet.SpreadsheetRetryClient;
+
 import tp1.clients.user.UsersClient;
-import tp1.clients.user.UsersRetryClient;
 import tp1.discovery.Discovery;
 import tp1.impl.engine.SpreadsheetEngineImpl;
 import tp1.server.WebServiceType;
@@ -23,10 +23,9 @@ import tp1.util.Cell;
 import tp1.util.CellRange;
 import tp1.util.InvalidCellIdException;
 
-import java.net.URI;
+
+
 import java.util.*;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.logging.Logger;
 
 import static tp1.server.WebServiceType.SOAP;
 
@@ -47,9 +46,7 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 
 	private final WebServiceType type;
 
-	public static Discovery discovery;
-
-	private static Logger Log = Logger.getLogger(SpreadsheetResource.class.getName());
+	private static Discovery discovery;
 
 	public SpreadsheetResource(String domainId, WebServiceType type) {
 		this.domainId = domainId;
@@ -59,56 +56,16 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 		this.engine = SpreadsheetEngineImpl.getInstance();
 	}
 
-
-
-
 	public static void setDiscovery(Discovery discovery) {
 		SpreadsheetResource.discovery = discovery;
 	}
 
-	private final static Map<String, SpreadsheetClient> cachedSpreadSheetClients = new ConcurrentHashMap<>();
 	public static SpreadsheetClient getRemoteSpreadsheetClient(String domainId) {
-		if(cachedSpreadSheetClients.containsKey(domainId))
-			return cachedSpreadSheetClients.get(domainId);
-
-		String serverUrl = discovery.knownUrisOf(domainId, SpreadsheetClient.SERVICE).stream()
-				.findAny()
-				.map(URI::toString)
-				.orElse(null);
-
-		SpreadsheetClient client = null;
-		if(serverUrl != null) {
-			try {
-				client = new SpreadsheetRetryClient(serverUrl);
-				cachedSpreadSheetClients.put(domainId,client);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		}
-
-		return client;
+		return discovery.getSpreadsheetClient(domainId);
 	}
 
-
-	private UsersClient cachedUserClient;
 	private UsersClient getLocalUsersClient() {
-
-		if(cachedUserClient == null) {
-			String serverUrl = discovery.knownUrisOf(domainId, UsersClient.SERVICE).stream()
-				.findAny()
-				.map(URI::toString)
-				.orElse(null);
-
-			if(serverUrl != null) {
-				try {
-					cachedUserClient = new UsersRetryClient(serverUrl);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		}
-
-		return cachedUserClient;
+		return discovery.getUserClient(domainId);
 	}
 
 	public static void throwWebAppException(WebServiceType type, Response.Status status) throws SheetsException {
@@ -347,6 +304,11 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 			sheets.forEach(id -> spreadsheets.remove(id));
 			spreadsheetOwners.remove(userId);
 		}
+	}
+
+	@Override
+	public List<Spreadsheet> getSpreadsheets() throws SheetsException {
+		return new ArrayList<>(spreadsheets.values());
 	}
 }
 

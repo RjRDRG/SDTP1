@@ -4,6 +4,7 @@ import tp1.api.Spreadsheet;
 import tp1.api.service.soap.SheetsException;
 import tp1.api.service.util.Result;
 
+import java.util.List;
 import java.util.Set;
 
 public interface SpreadsheetClient {
@@ -27,4 +28,6 @@ public interface SpreadsheetClient {
     Result<Void> unshareSpreadsheet( String sheetId, String userId,  String password);
 
     Result<Void> deleteUserSpreadsheets(String userId, String password);
+
+    Result<List<Spreadsheet>> getSpreadsheets();
 }

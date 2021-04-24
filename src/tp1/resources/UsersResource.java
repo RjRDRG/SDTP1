@@ -8,14 +8,15 @@ import tp1.api.User;
 import tp1.api.service.rest.RestUsers;
 import tp1.api.service.soap.SoapUsers;
 import tp1.api.service.soap.UsersException;
+
 import tp1.clients.sheet.SpreadsheetClient;
-import tp1.clients.sheet.SpreadsheetRetryClient;
+
+
 import tp1.discovery.Discovery;
 import tp1.server.WebServiceType;
 
-import java.net.URI;
+
 import java.util.*;
-import java.util.logging.Logger;
 
 import static tp1.server.WebServiceType.SOAP;
 
@@ -31,43 +32,21 @@ public class UsersResource implements RestUsers, SoapUsers {
 
 	private WebServiceType type;
 
-	public static Discovery discovery;
+	private static Discovery discovery;
 
 	private final Map<String, User> users = new HashMap<>();
-
-	private static Logger Log = Logger.getLogger(UsersResource.class.getName());
 
 	public UsersResource(String domainId, WebServiceType type) {
 		this.domainId = domainId;
 		this.type = type;
 	}
 
-
-
-
 	public static void setDiscovery(Discovery discovery) {
 		UsersResource.discovery = discovery;
 	}
 
-	private SpreadsheetClient cachedSpreadsheetClient;
 	private SpreadsheetClient getLocalSpreadsheetClient() {
-
-		if(cachedSpreadsheetClient == null) {
-			String serverUrl = discovery.knownUrisOf(domainId, SpreadsheetClient.SERVICE).stream()
-					.findAny()
-					.map(URI::toString)
-					.orElse(null);
-
-			if(serverUrl != null) {
-				try {
-					cachedSpreadsheetClient = new SpreadsheetRetryClient(serverUrl);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-			}
-		}
-
-		return cachedSpreadsheetClient;
+		return discovery.getSpreadsheetClient(domainId);
 	}
 
 	public static void throwWebAppException(WebServiceType type, Status status) throws UsersException {
@@ -76,9 +55,6 @@ public class UsersResource implements RestUsers, SoapUsers {
 		else
 			throw new WebApplicationException(status);
 	}
-
-
-
 
 	@Override
 	public String createUser(User user) throws UsersException {

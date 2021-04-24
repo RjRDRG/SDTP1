@@ -3,6 +3,7 @@ package tp1.clients.sheet;
 import tp1.api.Spreadsheet;
 import tp1.api.service.util.Result;
 
+import java.util.List;
 import java.util.function.Supplier;
 
 import static tp1.api.service.util.Result.ErrorCode.NOT_AVAILABLE;
@@ -13,6 +14,10 @@ public class SpreadsheetRetryClient implements SpreadsheetClient{
     public final static long RETRY_PERIOD = 1000;
 
     private final SpreadsheetClient client;
+
+    public SpreadsheetRetryClient(SpreadsheetClient client) {
+        this.client = client;
+    }
 
     public SpreadsheetRetryClient(String serverUrl) throws Exception{
         if (serverUrl.contains("/rest"))
@@ -82,5 +87,10 @@ public class SpreadsheetRetryClient implements SpreadsheetClient{
     @Override
     public Result<Void> deleteUserSpreadsheets(String userId, String password) {
         return retry( () -> client.deleteUserSpreadsheets(userId,password));
+    }
+
+    @Override
+    public Result<List<Spreadsheet>> getSpreadsheets() {
+        return retry(client::getSpreadsheets);
     }
 }

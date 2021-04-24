@@ -14,7 +14,7 @@ import static tp1.clients.sheet.SpreadsheetClient.SERVICE;
 
 public class SpreadsheetRestServer {
 
-    private static Logger Log = Logger.getLogger(UsersRestServer.class.getName());
+    private static Logger Log = Logger.getLogger(SpreadsheetRestServer.class.getName());
 
     static {
         System.setProperty("java.net.preferIPv4Stack", "true");
@@ -29,20 +29,20 @@ public class SpreadsheetRestServer {
 
             String ip = InetAddress.getLocalHost().getHostAddress();
 
+            String serverURI = String.format("http://%s:%s/rest", ip, PORT);
+
             ResourceConfig config = new ResourceConfig();
             config.register(new SpreadsheetResource(domain, WebServiceType.REST));
 
-            String serverURI = String.format("http://%s:%s/rest", ip, PORT);
             JdkHttpServerFactory.createHttpServer(URI.create(serverURI), config);
 
             Discovery discovery = new Discovery( domain, SERVICE ,serverURI);
+
             SpreadsheetResource.setDiscovery(discovery);
             discovery.startSendingAnnouncements();
             discovery.startCollectingAnnouncements();
 
             Log.info(String.format("%s Server ready @ %s\n",  SERVICE, serverURI));
-
-            //More code can be executed here...
         } catch( Exception e) {
             Log.severe(e.getMessage());
         }

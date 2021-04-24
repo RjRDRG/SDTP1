@@ -11,6 +11,7 @@ import tp1.api.service.util.Result;
 import javax.xml.namespace.QName;
 import java.net.MalformedURLException;
 import java.net.URL;
+import java.util.List;
 
 public class SpreadsheetSoapClient implements SpreadsheetClient {
 
@@ -127,6 +128,17 @@ public class SpreadsheetSoapClient implements SpreadsheetClient {
         try {
             target.deleteUserSpreadsheets(userId, password);
             return Result.ok();
+        } catch (SheetsException e) {
+            return Result.error(e.getMessage(),e);
+        } catch (Exception e) {
+            return Result.error(Result.ErrorCode.NOT_AVAILABLE,e);
+        }
+    }
+
+    @Override
+    public Result<List<Spreadsheet>> getSpreadsheets() {
+        try {
+            return Result.ok(target.getSpreadsheets());
         } catch (SheetsException e) {
             return Result.error(e.getMessage(),e);
         } catch (Exception e) {

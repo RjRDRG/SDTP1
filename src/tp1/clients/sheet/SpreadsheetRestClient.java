@@ -14,6 +14,8 @@ import tp1.api.Spreadsheet;
 import tp1.api.service.rest.RestSpreadsheets;
 import tp1.api.service.util.Result;
 
+import java.util.List;
+
 public class SpreadsheetRestClient implements SpreadsheetClient {
 
     private final WebTarget target;
@@ -168,6 +170,22 @@ public class SpreadsheetRestClient implements SpreadsheetClient {
                 return Result.error(Response.Status.fromStatusCode(r.getStatus()), new WebApplicationException(r.getStatus()));
             else
                 return Result.ok();
+        } catch (Exception e) {
+            return Result.error(Result.ErrorCode.NOT_AVAILABLE, e);
+        }
+    }
+
+    @Override
+    public Result<List<Spreadsheet>> getSpreadsheets() {
+        try {
+            Response r = target.path("spreadsheets").path("all").request()
+                    .accept(MediaType.APPLICATION_JSON)
+                    .get();
+
+            if (r.getStatus() == Response.Status.OK.getStatusCode() && r.hasEntity())
+                return Result.ok(r.readEntity(new GenericType<List<Spreadsheet>>() {}));
+            else
+                return Result.error(Response.Status.fromStatusCode(r.getStatus()), new WebApplicationException(r.getStatus()));
         } catch (Exception e) {
             return Result.error(Result.ErrorCode.NOT_AVAILABLE, e);
         }
