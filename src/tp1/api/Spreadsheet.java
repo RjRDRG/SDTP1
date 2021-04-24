@@ -6,7 +6,7 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import tp1.api.engine.AbstractSpreadsheet;
-import tp1.server.resources.SpreadsheetResource;
+import tp1.resources.SpreadsheetResource;
 import tp1.util.CellRange;
 
 
@@ -185,9 +185,11 @@ public class Spreadsheet implements AbstractSpreadsheet {
 			String domainId = parts[0];
 			String otherSheetId = parts[1];
 
-			return SpreadsheetResource.getRemoteSpreadsheetClient(domainId).getReferencedSpreadsheetValues(otherSheetId, owner+"@"+this.sheetURL.split("#id#")[0], range);
+			String userId = owner+"@"+this.sheetURL.split("#id#")[0];
+
+			return SpreadsheetResource.getRemoteSpreadsheetClient(domainId)
+					.getReferencedSpreadsheetValues(otherSheetId, userId, range).value();
 		} catch (Exception e) {
-			e.printStackTrace();
 			return null;
 		}
 	}

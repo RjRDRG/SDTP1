@@ -4,13 +4,13 @@ import org.glassfish.jersey.jdkhttp.JdkHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import tp1.discovery.Discovery;
 import tp1.server.WebServiceType;
-import tp1.server.resources.SpreadsheetResource;
+import tp1.resources.SpreadsheetResource;
 
 import java.net.InetAddress;
 import java.net.URI;
 import java.util.logging.Logger;
 
-import static tp1.clients.SpreadsheetApiClient.SERVICE;
+import static tp1.clients.sheet.SpreadsheetClient.SERVICE;
 
 public class SpreadsheetRestServer {
 

@@ -1,4 +1,4 @@
-package tp1.server.resources;
+package tp1.resources;
 
 import jakarta.inject.Singleton;
 import jakarta.jws.WebService;
@@ -8,14 +8,14 @@ import tp1.api.User;
 import tp1.api.service.rest.RestUsers;
 import tp1.api.service.soap.SoapUsers;
 import tp1.api.service.soap.UsersException;
-import tp1.clients.*;
+import tp1.clients.sheet.SpreadsheetClient;
+import tp1.clients.sheet.SpreadsheetRetryClient;
 import tp1.discovery.Discovery;
 import tp1.server.WebServiceType;
 
 import java.net.URI;
 import java.util.*;
 import java.util.logging.Logger;
-import java.util.stream.Collectors;
 
 import static tp1.server.WebServiceType.SOAP;
 
@@ -42,25 +42,25 @@ public class UsersResource implements RestUsers, SoapUsers {
 		this.type = type;
 	}
 
+
+
+
 	public static void setDiscovery(Discovery discovery) {
 		UsersResource.discovery = discovery;
 	}
 
-	private SpreadsheetApiClient cachedSpreadsheetClient;
-	private SpreadsheetApiClient getLocalSpreadsheetClient() {
+	private SpreadsheetClient cachedSpreadsheetClient;
+	private SpreadsheetClient getLocalSpreadsheetClient() {
 
 		if(cachedSpreadsheetClient == null) {
-			String serverUrl = discovery.knownUrisOf(domainId, SpreadsheetApiClient.SERVICE).stream()
+			String serverUrl = discovery.knownUrisOf(domainId, SpreadsheetClient.SERVICE).stream()
 					.findAny()
 					.map(URI::toString)
 					.orElse(null);
 
 			if(serverUrl != null) {
 				try {
-					if (serverUrl.contains("/rest"))
-						cachedSpreadsheetClient = new SpreadsheetRestClient(serverUrl);
-					else
-						cachedSpreadsheetClient = new SpreadsheetSoapClient(serverUrl);
+					cachedSpreadsheetClient = new SpreadsheetRetryClient(serverUrl);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -70,26 +70,28 @@ public class UsersResource implements RestUsers, SoapUsers {
 		return cachedSpreadsheetClient;
 	}
 
-	public static void throwWebAppException(String msg, WebServiceType type, Status status) throws UsersException {
+	public static void throwWebAppException(WebServiceType type, Status status) throws UsersException {
 		if(type == SOAP)
-			throw new UsersException(msg);
+			throw new UsersException(status.name());
 		else
 			throw new WebApplicationException(status);
 	}
+
+
 
 
 	@Override
 	public String createUser(User user) throws UsersException {
 		if(user.getUserId() == null || user.getPassword() == null || user.getFullName() == null || 
 				user.getEmail() == null) {
-			throwWebAppException( "User object invalid.", type, Status.BAD_REQUEST );
+			throwWebAppException(type, Status.BAD_REQUEST );
 		}
 
 		synchronized ( this ) {
 			String userId = user.getUserId();
 
 			if(users.containsKey(userId)) {
-				throwWebAppException( "User already exists.", type, Status.CONFLICT);
+				throwWebAppException(type, Status.CONFLICT);
 			}
 
 			users.put(userId, user);
@@ -104,11 +106,11 @@ public class UsersResource implements RestUsers, SoapUsers {
 		User user = users.get(userId);
 
 		if( user == null ) {
-			throwWebAppException( "User does not exist.", type, Status.NOT_FOUND ); //Nao mudar mensagem de erro
+			throwWebAppException(type, Status.NOT_FOUND );
 		}
 
 		if(!user.getPassword().equals(password)) {
-			throwWebAppException( "Password is incorrect.", type, Status.FORBIDDEN );
+			throwWebAppException(type, Status.FORBIDDEN );
 		}
 
 		return user;
@@ -118,18 +120,18 @@ public class UsersResource implements RestUsers, SoapUsers {
 	@Override
 	public User updateUser(String userId, String password, User user) throws UsersException {
 		if(userId == null || password == null) {
-			throwWebAppException( "UserId or password null.", type, Status.BAD_REQUEST );
+			throwWebAppException(type, Status.BAD_REQUEST );
 		}
 
 		synchronized ( this ) {
 			User oldUser = users.get(userId);
 
 			if( oldUser == null ) {
-				throwWebAppException( "User does not exist.", type, Status.NOT_FOUND );
+				throwWebAppException(type, Status.NOT_FOUND );
 			}
 
 			if( !oldUser.getPassword().equals( password)) {
-				throwWebAppException( "Password is incorrect.", type, Status.FORBIDDEN );
+				throwWebAppException(type, Status.FORBIDDEN );
 			}
 
 			User newUser = new User(userId,
@@ -147,18 +149,18 @@ public class UsersResource implements RestUsers, SoapUsers {
 	@Override
 	public User deleteUser(String userId, String password) throws UsersException {
 		if(userId == null ) {
-			throwWebAppException( "UserId null.", type, Status.BAD_REQUEST );
+			throwWebAppException(type, Status.BAD_REQUEST );
 		}
 
 		synchronized ( this ) {
 			User user = users.get(userId);
 
 			if( user == null ) {
-				throwWebAppException( "User does not exist.", type, Status.NOT_FOUND );
+				throwWebAppException(type, Status.NOT_FOUND );
 			}
 
 			if( !user.getPassword().equals( password)) {
-				throwWebAppException( "Password is incorrect.", type, Status.FORBIDDEN );
+				throwWebAppException(type, Status.FORBIDDEN );
 			}
 
 			try {

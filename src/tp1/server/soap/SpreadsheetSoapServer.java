@@ -4,7 +4,7 @@ import com.sun.net.httpserver.HttpServer;
 import jakarta.xml.ws.Endpoint;
 import tp1.discovery.Discovery;
 import tp1.server.WebServiceType;
-import tp1.server.resources.SpreadsheetResource;
+import tp1.resources.SpreadsheetResource;
 import tp1.server.rest.UsersRestServer;
 
 import java.net.InetAddress;
@@ -12,7 +12,7 @@ import java.net.InetSocketAddress;
 import java.util.concurrent.Executors;
 import java.util.logging.Logger;
 
-import static tp1.clients.SpreadsheetApiClient.SERVICE;
+import static tp1.clients.sheet.SpreadsheetClient.SERVICE;
 
 public class SpreadsheetSoapServer {
 

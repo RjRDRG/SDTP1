@@ -4,13 +4,13 @@ import org.glassfish.jersey.jdkhttp.JdkHttpServerFactory;
 import org.glassfish.jersey.server.ResourceConfig;
 import tp1.discovery.Discovery;
 import tp1.server.WebServiceType;
-import tp1.server.resources.UsersResource;
+import tp1.resources.UsersResource;
 
 import java.net.InetAddress;
 import java.net.URI;
 import java.util.logging.Logger;
 
-import static tp1.clients.UsersApiClient.SERVICE;
+import static tp1.clients.user.UsersClient.SERVICE;
 
 public class UsersRestServer {
 

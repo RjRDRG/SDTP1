@@ -1,4 +1,4 @@
-package tp1.server.resources;
+package tp1.resources;
 
 import jakarta.inject.Singleton;
 import jakarta.jws.WebService;
@@ -6,11 +6,16 @@ import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import org.apache.commons.lang3.tuple.Pair;
 import tp1.api.Spreadsheet;
+import tp1.api.User;
 import tp1.api.engine.SpreadsheetEngine;
 import tp1.api.service.rest.RestSpreadsheets;
 import tp1.api.service.soap.SheetsException;
 import tp1.api.service.soap.SoapSpreadsheets;
-import tp1.clients.*;
+import tp1.api.service.util.Result;
+import tp1.clients.sheet.SpreadsheetClient;
+import tp1.clients.sheet.SpreadsheetRetryClient;
+import tp1.clients.user.UsersClient;
+import tp1.clients.user.UsersRetryClient;
 import tp1.discovery.Discovery;
 import tp1.impl.engine.SpreadsheetEngineImpl;
 import tp1.server.WebServiceType;
@@ -54,31 +59,27 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 		this.engine = SpreadsheetEngineImpl.getInstance();
 	}
 
+
+
+
 	public static void setDiscovery(Discovery discovery) {
 		SpreadsheetResource.discovery = discovery;
 	}
 
-	private static Map<String, SpreadsheetApiClient> cachedSpreadSheetClients;
-	public static SpreadsheetApiClient getRemoteSpreadsheetClient(String domainId) {
-		if (cachedSpreadSheetClients == null)
-			cachedSpreadSheetClients = new ConcurrentHashMap<>();
-
+	private final static Map<String, SpreadsheetClient> cachedSpreadSheetClients = new ConcurrentHashMap<>();
+	public static SpreadsheetClient getRemoteSpreadsheetClient(String domainId) {
 		if(cachedSpreadSheetClients.containsKey(domainId))
 			return cachedSpreadSheetClients.get(domainId);
 
-		String serverUrl = discovery.knownUrisOf(domainId, SpreadsheetApiClient.SERVICE).stream()
+		String serverUrl = discovery.knownUrisOf(domainId, SpreadsheetClient.SERVICE).stream()
 				.findAny()
 				.map(URI::toString)
 				.orElse(null);
 
-		SpreadsheetApiClient client = null;
+		SpreadsheetClient client = null;
 		if(serverUrl != null) {
 			try {
-				if (serverUrl.contains("/rest"))
-					client = new SpreadsheetRestClient(serverUrl);
-				else
-					client = new SpreadsheetSoapClient(serverUrl);
-
+				client = new SpreadsheetRetryClient(serverUrl);
 				cachedSpreadSheetClients.put(domainId,client);
 			} catch (Exception e) {
 				e.printStackTrace();
@@ -89,22 +90,18 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 	}
 
 
-	private UsersApiClient cachedUserClient;
-	private UsersApiClient getLocalUsersClient() {
+	private UsersClient cachedUserClient;
+	private UsersClient getLocalUsersClient() {
 
 		if(cachedUserClient == null) {
-			String serverUrl = discovery.knownUrisOf(domainId, UsersApiClient.SERVICE).stream()
+			String serverUrl = discovery.knownUrisOf(domainId, UsersClient.SERVICE).stream()
 				.findAny()
 				.map(URI::toString)
 				.orElse(null);
 
 			if(serverUrl != null) {
 				try {
-
-					if (serverUrl.contains("/rest"))
-						cachedUserClient = new UsersRestClient(serverUrl);
-					else
-						cachedUserClient = new UsersSoapClient(serverUrl);
+					cachedUserClient = new UsersRetryClient(serverUrl);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -114,35 +111,31 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 		return cachedUserClient;
 	}
 
-	public static void throwWebAppException(Logger Log, String msg, WebServiceType type, Response.Status status) throws SheetsException {
+	public static void throwWebAppException(WebServiceType type, Response.Status status) throws SheetsException {
 		if(type == SOAP)
-			throw new SheetsException(msg);
+			throw new SheetsException(status.name());
 		else
 			throw new WebApplicationException(status);
 	}
+
+
 
 	@Override
 	public String createSpreadsheet(Spreadsheet sheet, String password) throws SheetsException {
 
 		if( sheet == null || password == null)
-			throwWebAppException(Log, "Sheet or password null.", type, Response.Status.BAD_REQUEST);
+			throwWebAppException(type, Response.Status.BAD_REQUEST);
 
 		if (sheet.getColumns() <= 0 || sheet.getRows() <= 0)
-			throwWebAppException(Log, "Invalid dimensions.", type, Response.Status.BAD_REQUEST);
+			throwWebAppException(type, Response.Status.BAD_REQUEST);
 
 		synchronized(this) {
 
 			String spreadsheetOwner = sheet.getOwner();
 
-			//TODO: Evitar ciclos de referencias
-
-			boolean valid = true;
-			try {
-				valid = getLocalUsersClient().verifyUser(spreadsheetOwner, password);
-			} catch (Exception e) {
-				throwWebAppException(Log, e.getMessage(), type, Response.Status.BAD_REQUEST);
-			}
-			if(!valid) throwWebAppException(Log, "Invalid password.", type, Response.Status.BAD_REQUEST);
+			Result<User> result = getLocalUsersClient().getUser(spreadsheetOwner, password);
+			if(!result.isOK())
+				throwWebAppException(type, Response.Status.BAD_REQUEST);
 
 			String sheetId;
 			do {
@@ -166,7 +159,7 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 	public void deleteSpreadsheet(String sheetId, String password) throws SheetsException {
 
 		if( sheetId == null || password == null ) {
-			throwWebAppException(Log, "SheetId or password null.", type, Response.Status.BAD_REQUEST);
+			throwWebAppException(type, Response.Status.BAD_REQUEST);
 		}
 
 		synchronized (this) {
@@ -174,17 +167,14 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 			Spreadsheet sheet = spreadsheets.get(sheetId);
 
 			if( sheet == null ) {
-				throwWebAppException(Log, "Sheet doesnt exist.", type, Response.Status.NOT_FOUND);
+				throwWebAppException(type, Response.Status.NOT_FOUND);
 			}
 
-			boolean valid = true;
-			try {
-				valid = getLocalUsersClient().verifyUser(sheet.getOwner(), password);
-			} catch (Exception e) {
-				throwWebAppException(Log, "Bad request", type, Response.Status.BAD_REQUEST);
-			}
-
-			if(!valid) throwWebAppException(Log, "Invalid password.", type, Response.Status.FORBIDDEN);
+			Result<User> result = getLocalUsersClient().getUser(sheet.getOwner(), password);
+			if(result.error() == Result.ErrorCode.FORBIDDEN)
+				throwWebAppException(type, Response.Status.FORBIDDEN);
+			else if(!result.isOK())
+				throwWebAppException(type, Response.Status.BAD_REQUEST);
 
 			spreadsheetOwners.get(sheet.getOwner()).remove(sheetId);
 			spreadsheets.remove(sheetId);
@@ -195,28 +185,25 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 	public Spreadsheet getSpreadsheet(String sheetId, String userId, String password) throws SheetsException {
 
 		if( sheetId == null || userId == null ) {
-			throwWebAppException(Log, "SheetId or userId null.", type, Response.Status.BAD_REQUEST);
+			throwWebAppException(type, Response.Status.BAD_REQUEST);
 		}
 
 		Spreadsheet sheet = spreadsheets.get(sheetId);
 
 		if( sheet == null ) {
-			throwWebAppException(Log, "Sheet doesnt exist: " + sheetId, type, Response.Status.NOT_FOUND);
+			throwWebAppException(type, Response.Status.NOT_FOUND);
 		}
 
-		boolean valid = true;
-		try {
-			valid = getLocalUsersClient().verifyUser(userId, password);
-		} catch (Exception e) {
-			throwWebAppException(Log, "Not found", type, Response.Status.NOT_FOUND);
-		}
-
-		if(!valid) throwWebAppException(Log, "Invalid password.", type, Response.Status.FORBIDDEN);
+		Result<User> result = getLocalUsersClient().getUser(userId, password);
+		if(result.error() == Result.ErrorCode.FORBIDDEN)
+			throwWebAppException(type, Response.Status.FORBIDDEN);
+		else if(!result.isOK())
+			throwWebAppException(type, Response.Status.BAD_REQUEST);
 
 		if (!userId.equals(sheet.getOwner())) {
 
 			if (!sheet.getSharedWith().stream().anyMatch(user -> user.contains(userId)))
-				throwWebAppException(Log, "User " + userId + " does not have permissions to read this spreadsheet.", type, Response.Status.FORBIDDEN);
+				throwWebAppException(type, Response.Status.FORBIDDEN);
 
 		}
 
@@ -227,24 +214,24 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 	public String[][] getReferencedSpreadsheetValues(String sheetId, String userId, String range) throws SheetsException {
 
 		if( sheetId == null || userId == null || range == null) {
-			throwWebAppException(Log, "SheetId or userId or range null.", type, Response.Status.BAD_REQUEST);
+			throwWebAppException(type, Response.Status.BAD_REQUEST);
 		}
 
 		Spreadsheet spreadsheet = spreadsheets.get(sheetId);
 
 		if( spreadsheet == null ) {
-			throwWebAppException(Log, "Sheet doesnt exist.", type, Response.Status.NOT_FOUND);
+			throwWebAppException(type, Response.Status.NOT_FOUND);
 		}
 
 		if (!userId.equals(spreadsheet.getOwner()) && !spreadsheet.getSharedWith().contains(userId)) {
-			throwWebAppException(Log, "User " + userId + " does not have permissions to read this spreadsheet.", type, Response.Status.BAD_REQUEST);
+			throwWebAppException(type, Response.Status.BAD_REQUEST);
 		}
 
 		String[][] result = null;
 		try {
 			result = engine.computeSpreadsheetValues(spreadsheet);
 		} catch (Exception exception) {
-			throwWebAppException(Log, "Error in spreadsheet", type, Response.Status.BAD_REQUEST);
+			throwWebAppException(type, Response.Status.BAD_REQUEST);
 		}
 
 		return new CellRange(range).extractRangeValuesFrom(result);
@@ -259,7 +246,7 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 		try {
 			result = engine.computeSpreadsheetValues(spreadsheet);
 		} catch (Exception exception) {
-			throwWebAppException(Log, "Error in spreadsheet", type, Response.Status.BAD_REQUEST);
+			throwWebAppException(type, Response.Status.BAD_REQUEST);
 		}
 
 		return result;
@@ -269,21 +256,19 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 	public void updateCell(String sheetId, String cell, String rawValue, String userId, String password) throws SheetsException {
 
 		if( sheetId == null || cell == null || rawValue == null || userId == null || password == null) {
-			throwWebAppException(Log, "Malformed request.", type, Response.Status.BAD_REQUEST);
+			throwWebAppException(type, Response.Status.BAD_REQUEST);
 		}
 
 		synchronized(this) {
 
 			Spreadsheet spreadsheet = getSpreadsheet(sheetId, userId, password);
 
-			//TODO: Evitar ciclos de referencias
-
 			try {
 				Pair<Integer,Integer> coordinates =  Cell.CellId2Indexes(cell);
 
 				spreadsheet.placeCellRawValue(coordinates.getLeft(),coordinates.getRight(), rawValue);
 			} catch (InvalidCellIdException e) {
-				throwWebAppException(Log, "Invalid spreadsheet cell.", type, Response.Status.BAD_REQUEST);
+				throwWebAppException(type, Response.Status.BAD_REQUEST);
 			}
 
 		}
@@ -295,7 +280,7 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 	public void shareSpreadsheet(String sheetId, String userId, String password) throws SheetsException {
 
 		if( sheetId == null || userId == null || password == null ) {
-			throwWebAppException(Log, "SheetId or userId or password null.", type, Response.Status.BAD_REQUEST);
+			throwWebAppException(type, Response.Status.BAD_REQUEST);
 		}
 
 		synchronized (this) {
@@ -303,23 +288,19 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 			Spreadsheet sheet = spreadsheets.get(sheetId);
 
 			if( sheet == null ) {
-				throwWebAppException(Log, "Sheet doesnt exist.", type, Response.Status.NOT_FOUND);
+				throwWebAppException(type, Response.Status.NOT_FOUND);
 			}
 
-			boolean valid = true;
-			try {
-				valid = getLocalUsersClient().verifyUser(sheet.getOwner(), password);
-			} catch (Exception e) {
-				throwWebAppException(Log, "Bad request", type, Response.Status.BAD_REQUEST);
-			}
-
-			if(!valid) throwWebAppException(Log, "Invalid password.", type, Response.Status.FORBIDDEN);
-
+			Result<User> result = getLocalUsersClient().getUser(sheet.getOwner(), password);
+			if(result.error() == Result.ErrorCode.FORBIDDEN)
+				throwWebAppException(type, Response.Status.FORBIDDEN);
+			else if(!result.isOK())
+				throwWebAppException(type, Response.Status.BAD_REQUEST);
 
 			Set<String> sharedWith = sheet.getSharedWith();
 
 			if (sharedWith.contains(userId))
-				throwWebAppException(Log, "Spreadsheet is already being shared with this user.", type, Response.Status.CONFLICT);
+				throwWebAppException(type, Response.Status.CONFLICT);
 
 			sharedWith.add(userId);
 		}
@@ -329,28 +310,23 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 	public void unshareSpreadsheet(String sheetId, String userId, String password) throws SheetsException {
 
 		if( sheetId == null || userId == null || password == null ) {
-			throwWebAppException(Log, "SheetId or userId or password null.", type, Response.Status.BAD_REQUEST);
+			throwWebAppException(type, Response.Status.BAD_REQUEST);
 		}
 
 		synchronized (this) {
 
 			Spreadsheet sheet = spreadsheets.get(sheetId);
 
-			boolean valid = true;
-			try {
-				valid = getLocalUsersClient().verifyUser(sheet.getOwner(), password);
-			} catch (Exception e) {
-				throwWebAppException(Log, "Bad request", type, Response.Status.BAD_REQUEST);
-			}
-
-			if(!valid) throwWebAppException(Log, "Invalid password.", type, Response.Status.FORBIDDEN);
+			Result<User> result = getLocalUsersClient().getUser(sheet.getOwner(), password);
+			if(result.error() == Result.ErrorCode.FORBIDDEN)
+				throwWebAppException(type, Response.Status.FORBIDDEN);
+			else if(!result.isOK())
+				throwWebAppException(type, Response.Status.BAD_REQUEST);
 
 			Set<String> sharedWith = sheet.getSharedWith();
 
-
 			if (!sharedWith.contains(userId))
-				throwWebAppException(Log, "User " + userId + " is not sharing this spreadsheet therefore it cannot be unshared.",
-						type, Response.Status.NOT_FOUND);
+				throwWebAppException(type, Response.Status.NOT_FOUND);
 
 			sharedWith.remove(userId);
 		}
@@ -360,13 +336,11 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 	public void deleteUserSpreadsheets(String userId, String password) throws SheetsException {
 		synchronized (this) {
 
-			boolean valid = true;
-			try {
-				valid = getLocalUsersClient().verifyUser(userId, password);
-			} catch (Exception e) {
-				throwWebAppException(Log, "Bad request", type, Response.Status.BAD_REQUEST);
-			}
-			if(!valid) throwWebAppException(Log, "Invalid password.", type, Response.Status.FORBIDDEN);
+			Result<User> result = getLocalUsersClient().getUser(userId, password);
+			if(result.error() == Result.ErrorCode.FORBIDDEN)
+				throwWebAppException(type, Response.Status.FORBIDDEN);
+			else if(!result.isOK())
+				throwWebAppException(type, Response.Status.BAD_REQUEST);
 
 			Set<String> sheets = spreadsheetOwners.get(userId);
 

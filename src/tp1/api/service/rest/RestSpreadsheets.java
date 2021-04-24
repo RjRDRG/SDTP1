@@ -11,9 +11,6 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import tp1.api.Spreadsheet;
-import tp1.api.service.soap.SheetsException;
-
-import java.util.Set;
 
 
 @Path(RestSpreadsheets.PATH)
@@ -33,7 +30,7 @@ public interface RestSpreadsheets {
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	String createSpreadsheet(Spreadsheet sheet, @QueryParam("password") String password ) throws SheetsException;
+	String createSpreadsheet(Spreadsheet sheet, @QueryParam("password") String password ) throws Exception;
 
 	
 	/**
@@ -49,7 +46,7 @@ public interface RestSpreadsheets {
 	 */
 	@DELETE
 	@Path("/{sheetId}")
-	void deleteSpreadsheet(@PathParam("sheetId") String sheetId, @QueryParam("password") String password) throws SheetsException;
+	void deleteSpreadsheet(@PathParam("sheetId") String sheetId, @QueryParam("password") String password) throws Exception;
 
 
 	/**
@@ -68,7 +65,7 @@ public interface RestSpreadsheets {
 	@Path("/{sheetId}")
 	@Produces(MediaType.APPLICATION_JSON)
 	Spreadsheet getSpreadsheet(@PathParam("sheetId") String sheetId , @QueryParam("userId") String userId,
-							   @QueryParam("password") String password) throws SheetsException;
+							   @QueryParam("password") String password) throws Exception;
 		
 	
 	/**
@@ -86,7 +83,7 @@ public interface RestSpreadsheets {
 	@Path("/{sheetId}/values")
 	@Produces(MediaType.APPLICATION_JSON)
 	String[][] getSpreadsheetValues(@PathParam("sheetId") String sheetId, 
-			@QueryParam("userId") String userId, @QueryParam("password") String password) throws SheetsException;
+			@QueryParam("userId") String userId, @QueryParam("password") String password) throws Exception;
 
 
 	/**
@@ -103,7 +100,7 @@ public interface RestSpreadsheets {
 	@GET
 	@Path("/reference/{sheetId}")
 	@Produces(MediaType.APPLICATION_JSON)
-	String[][] getReferencedSpreadsheetValues(@PathParam("sheetId") String sheetId , @QueryParam("userId") String userId, @QueryParam("range") String range) throws SheetsException;
+	String[][] getReferencedSpreadsheetValues(@PathParam("sheetId") String sheetId , @QueryParam("userId") String userId, @QueryParam("range") String range) throws Exception;
 
 	/**
 	 * Updates the raw values of some cells of a spreadsheet. 
@@ -123,7 +120,7 @@ public interface RestSpreadsheets {
 	@Path("/{sheetId}/{cell}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	void updateCell( @PathParam("sheetId") String sheetId, @PathParam("cell") String cell, String rawValue,
-			@QueryParam("userId") String userId, @QueryParam("password") String password) throws SheetsException;
+			@QueryParam("userId") String userId, @QueryParam("password") String password) throws Exception;
 
 	
 	/**
@@ -144,7 +141,7 @@ public interface RestSpreadsheets {
 	@POST
 	@Path("/{sheetId}/share/{userId}")
 	void shareSpreadsheet( @PathParam("sheetId") String sheetId, @PathParam("userId") String userId, 
-			@QueryParam("password") String password) throws SheetsException;
+			@QueryParam("password") String password) throws Exception;
 
 	
 	/**
@@ -163,7 +160,7 @@ public interface RestSpreadsheets {
 	@DELETE
 	@Path("/{sheetId}/share/{userId}")
 	void unshareSpreadsheet( @PathParam("sheetId") String sheetId, @PathParam("userId") String userId, 
-			@QueryParam("password") String password) throws SheetsException;
+			@QueryParam("password") String password) throws Exception;
 
 	/**
 	 * Deletes a users spreadsheets. Only the owner can call this method.
@@ -174,5 +171,5 @@ public interface RestSpreadsheets {
 	 */
 	@DELETE
 	@Path("/spreadsheets/{userId}")
-	void deleteUserSpreadsheets(@PathParam("userId") String userId, @QueryParam("password") String password) throws SheetsException;
+	void deleteUserSpreadsheets(@PathParam("userId") String userId, @QueryParam("password") String password) throws Exception;
 }
