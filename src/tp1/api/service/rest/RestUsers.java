@@ -13,11 +13,12 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import tp1.api.User;
+import tp1.api.service.soap.UsersException;
 
 @Path(RestUsers.PATH)
 public interface RestUsers {
 
-	static final String PATH="/users";
+	String PATH="/users";
 
 	/**
 	 * Creates a new user.
@@ -30,7 +31,7 @@ public interface RestUsers {
 	@POST
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	String createUser(User user);
+	String createUser(User user) throws UsersException;
 	
 	/**
 	 * Obtains the information on the user identified by name.
@@ -44,7 +45,7 @@ public interface RestUsers {
 	@GET
 	@Path("/{userId}")
 	@Produces(MediaType.APPLICATION_JSON)
-	User getUser(@PathParam("userId") String userId, @QueryParam("password") String password);
+	User getUser(@PathParam("userId") String userId, @QueryParam("password") String password) throws UsersException;
 	
 	/**
 	 * Modifies the information of a user. Values of null in any field of the user will be 
@@ -62,7 +63,7 @@ public interface RestUsers {
 	@Path("/{userId}")
 	@Consumes(MediaType.APPLICATION_JSON)
 	@Produces(MediaType.APPLICATION_JSON)
-	User updateUser(@PathParam("userId") String userId, @QueryParam("password") String password, User user);
+	User updateUser(@PathParam("userId") String userId, @QueryParam("password") String password, User user) throws UsersException;
 	
 	/**
 	 * Deletes the user identified by userId. The spreadsheets owned by the user should be eventually removed (asynchronous
@@ -77,7 +78,7 @@ public interface RestUsers {
 	@DELETE
 	@Path("/{userId}")
 	@Produces(MediaType.APPLICATION_JSON)
-	User deleteUser(@PathParam("userId") String userId, @QueryParam("password") String password);
+	User deleteUser(@PathParam("userId") String userId, @QueryParam("password") String password) throws UsersException;
 	
 	/**
 	 * Returns the list of users for which the pattern is a substring of the name (of the user), case-insensitive.

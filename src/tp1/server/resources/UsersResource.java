@@ -2,12 +2,12 @@ package tp1.server.resources;
 
 import jakarta.inject.Singleton;
 import jakarta.jws.WebService;
-import jakarta.ws.rs.core.Response;
+import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response.Status;
-import tp1.api.Spreadsheet;
 import tp1.api.User;
 import tp1.api.service.rest.RestUsers;
 import tp1.api.service.soap.SoapUsers;
+import tp1.api.service.soap.UsersException;
 import tp1.clients.*;
 import tp1.discovery.Discovery;
 import tp1.server.WebServiceType;
@@ -20,7 +20,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 import java.util.stream.Collectors;
 
-import static tp1.util.ExceptionMapper.*;
+import static tp1.server.WebServiceType.SOAP;
 
 @WebService(
 		serviceName = SoapUsers.NAME,
@@ -73,8 +73,16 @@ public class UsersResource implements RestUsers, SoapUsers {
 		return cachedSpreadsheetClient;
 	}
 
+	public static void throwWebAppException(Logger Log, String msg, WebServiceType type, Status status) throws UsersException {
+		if(type == SOAP)
+			throw new UsersException(msg);
+		else
+			throw new WebApplicationException(status);
+	}
+
+
 	@Override
-	public String createUser(User user) {
+	public String createUser(User user) throws UsersException {
 		Log.info("createUser : " + user);
 
 		if(user.getUserId() == null || user.getPassword() == null || user.getFullName() == null || 
@@ -97,7 +105,7 @@ public class UsersResource implements RestUsers, SoapUsers {
 
 
 	@Override
-	public User getUser(String userId, String password) {
+	public User getUser(String userId, String password) throws UsersException {
 		Log.info("getUser : user = " + userId + "; pwd = " + password);
 
 		User user = users.get(userId);
@@ -115,7 +123,7 @@ public class UsersResource implements RestUsers, SoapUsers {
 
 
 	@Override
-	public User updateUser(String userId, String password, User user) {
+	public User updateUser(String userId, String password, User user) throws UsersException {
 		Log.info("updateUser : user = " + userId + "; pwd = " + password + " ; user = " + user);
 
 		if(userId == null || password == null) {
@@ -146,7 +154,7 @@ public class UsersResource implements RestUsers, SoapUsers {
 
 
 	@Override
-	public User deleteUser(String userId, String password) {
+	public User deleteUser(String userId, String password) throws UsersException {
 		Log.info("deleteUser : user = " + userId + "; pwd = " + password);
 
 		if(userId == null ) {
@@ -167,7 +175,6 @@ public class UsersResource implements RestUsers, SoapUsers {
 			try {
 				getLocalSpreadsheetClient().deleteUserSpreadsheets(userId, password);
 			} catch (Exception e) {
-				e.printStackTrace();
 			}
 
 			return users.remove(userId);

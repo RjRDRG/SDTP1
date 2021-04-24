@@ -1,5 +1,7 @@
 package tp1.api;
 
+import java.util.HashSet;
+import java.util.Optional;
 import java.util.Set;
 
 import tp1.api.engine.AbstractSpreadsheet;
@@ -47,8 +49,8 @@ public class Spreadsheet implements AbstractSpreadsheet {
 		this.sheetURL = domainId+"#id#"+sheetId;
 		this.rows = s.rows;
 		this.columns = s.columns;
-		this.sharedWith = s.sharedWith;
-		this.rawValues = s.rawValues;
+		this.sharedWith = Optional.ofNullable(s.sharedWith).orElse(new HashSet<>());
+		this.rawValues = Optional.ofNullable(s.rawValues).orElse(new String[rows][columns]);
 	}
 
 	public String getSheetId() {

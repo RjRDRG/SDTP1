@@ -4,14 +4,12 @@ import com.sun.xml.ws.client.BindingProviderProperties;
 import jakarta.xml.ws.BindingProvider;
 import jakarta.xml.ws.Service;
 import tp1.api.Spreadsheet;
-import tp1.api.service.soap.SoapException;
+import tp1.api.service.soap.SheetsException;
 import tp1.api.service.soap.SoapSpreadsheets;
 
 import javax.xml.namespace.QName;
 import java.net.MalformedURLException;
 import java.net.URL;
-import java.util.Set;
-import java.util.function.Supplier;
 
 public class SpreadsheetSoapClient implements SpreadsheetApiClient {
 
@@ -33,8 +31,13 @@ public class SpreadsheetSoapClient implements SpreadsheetApiClient {
         ((BindingProvider) target).getRequestContext().put(BindingProviderProperties.REQUEST_TIMEOUT, REPLY_TIMEOUT);
     }
 
-    private <T> T retry(Supplier<T> supplier) {
-        SoapException exception;
+    @FunctionalInterface
+    public interface CheckedSupplier<T> {
+        T get() throws SheetsException;
+    }
+
+    private <T> T retry(CheckedSupplier<T> supplier) throws SheetsException {
+        SheetsException exception;
 
         int retries=0;
         do {
@@ -42,11 +45,11 @@ public class SpreadsheetSoapClient implements SpreadsheetApiClient {
 
             try {
                 return supplier.get();
-            } catch (SoapException e) {
-                exception = new SoapException(e.getMessage());
+            } catch (SheetsException e) {
+                exception = new SheetsException(e.getMessage());
                 break;
             } catch (Exception e) {
-                exception = new SoapException(e.getMessage());
+                exception = new SheetsException(e.getMessage());
             }
 
             try { Thread.sleep(RETRY_PERIOD); } catch (InterruptedException ignored) {}
@@ -57,55 +60,55 @@ public class SpreadsheetSoapClient implements SpreadsheetApiClient {
     }
 
     @Override
-    public String createSpreadsheet(Spreadsheet sheet, String password) {
+    public String createSpreadsheet(Spreadsheet sheet, String password) throws SheetsException {
         return retry( () -> target.createSpreadsheet(sheet, password) );
     }
 
     @Override
-    public void deleteSpreadsheet(String sheetId, String password) {
+    public void deleteSpreadsheet(String sheetId, String password) throws SheetsException {
         retry( () -> { target.deleteSpreadsheet(sheetId, password);
             return null;
         });
     }
 
     @Override
-    public Spreadsheet getSpreadsheet(String sheetId, String userId, String password)  {
+    public Spreadsheet getSpreadsheet(String sheetId, String userId, String password)  throws SheetsException {
         return retry( () -> target.getSpreadsheet(sheetId, userId, password) );
     }
 
     @Override
-    public String[][] getSpreadsheetValues(String sheetId, String userId, String password)  {
+    public String[][] getSpreadsheetValues(String sheetId, String userId, String password)  throws SheetsException{
         return retry( () -> target.getSpreadsheetValues(sheetId, userId, password) );
     }
 
     @Override
-    public String[][] getReferencedSpreadsheetValues(String sheetId, String userId, String range)  {
+    public String[][] getReferencedSpreadsheetValues(String sheetId, String userId, String range)  throws SheetsException{
         return retry( () -> target.getReferencedSpreadsheetValues(sheetId, userId, range) );
     }
 
     @Override
-    public void updateCell(String sheetId, String cell, String rawValue, String userId, String password)  {
+    public void updateCell(String sheetId, String cell, String rawValue, String userId, String password)  throws SheetsException{
         retry( () -> { target.updateCell(sheetId, cell, rawValue, userId, password);
             return null;
         } );
     }
 
     @Override
-    public void shareSpreadsheet(String sheetId, String userId, String password)  {
+    public void shareSpreadsheet(String sheetId, String userId, String password)  throws SheetsException{
         retry( () -> { target.shareSpreadsheet(sheetId, userId, password);
             return null;
         } );
     }
 
     @Override
-    public void unshareSpreadsheet(String sheetId, String userId, String password)  {
+    public void unshareSpreadsheet(String sheetId, String userId, String password)  throws SheetsException{
         retry( () -> { target.unshareSpreadsheet(sheetId, userId, password);
             return null;
         } );
     }
 
     @Override
-    public void deleteUserSpreadsheets(String userId, String password) {
+    public void deleteUserSpreadsheets(String userId, String password) throws SheetsException {
         retry( () -> {target.deleteUserSpreadsheets(userId, password); return null; } );
     }
 }

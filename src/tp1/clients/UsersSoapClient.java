@@ -1,14 +1,11 @@
 package tp1.clients;
 
 import com.sun.xml.ws.client.BindingProviderProperties;
-import jakarta.ws.rs.WebApplicationException;
-import jakarta.ws.rs.core.Response;
 import jakarta.xml.ws.BindingProvider;
 import jakarta.xml.ws.Service;
-import jakarta.xml.ws.WebServiceException;
 import tp1.api.User;
 import tp1.api.service.soap.SoapUsers;
-import tp1.api.service.soap.SoapException;
+import tp1.api.service.soap.UsersException;
 
 import javax.xml.namespace.QName;
 import java.net.MalformedURLException;
@@ -36,8 +33,13 @@ public class UsersSoapClient implements UsersApiClient {
         ((BindingProvider) target).getRequestContext().put(BindingProviderProperties.REQUEST_TIMEOUT, REPLY_TIMEOUT);
     }
 
-    private <T> T retry(Supplier<T> supplier) throws SoapException {
-        SoapException exception;
+    @FunctionalInterface
+    public interface CheckedSupplier<T> {
+        T get() throws UsersException;
+    }
+
+    private <T> T retry(CheckedSupplier<T> supplier ) throws UsersException {
+        UsersException exception;
 
         int retries=0;
         do {
@@ -45,11 +47,11 @@ public class UsersSoapClient implements UsersApiClient {
 
             try {
                 return supplier.get();
-            } catch (SoapException e) {
-                exception = new SoapException(e.getMessage());
+            } catch (UsersException e) {
+                exception = new UsersException(e.getMessage());
                 break;
             } catch (Exception e) {
-                exception = new SoapException(e.getMessage());
+                exception = new UsersException(e.getMessage());
             }
 
             try { Thread.sleep(RETRY_PERIOD); } catch (InterruptedException ignored) {}
@@ -60,12 +62,12 @@ public class UsersSoapClient implements UsersApiClient {
     }
 
     @Override
-    public String createUser(User user) throws SoapException {
+    public String createUser(User user) throws UsersException {
         return retry( () -> target.createUser(user) );
     }
 
     @Override
-    public Boolean verifyUser(String userId, String password) {
+    public Boolean verifyUser(String userId, String password) throws UsersException {
         return retry( () -> {
             try {
                 target.getUser(userId, password);
@@ -80,22 +82,22 @@ public class UsersSoapClient implements UsersApiClient {
     }
 
     @Override
-    public User getUser(String userId, String password) throws SoapException {
+    public User getUser(String userId, String password) throws UsersException {
         return retry( () -> target.getUser(userId, password) );
     }
 
     @Override
-    public User updateUser(String userId, String password, User user) throws SoapException {
+    public User updateUser(String userId, String password, User user) throws UsersException {
         return retry( () -> target.updateUser(userId, password, user) );
     }
 
     @Override
-    public User deleteUser(String userId, String password) throws SoapException {
+    public User deleteUser(String userId, String password) throws UsersException {
         return retry( () -> target.deleteUser(userId, password) );
     }
 
     @Override
-    public List<User> searchUsers(String pattern) throws SoapException {
+    public List<User> searchUsers(String pattern) throws UsersException {
         return retry( () -> target.searchUsers(pattern) );
     }
 }

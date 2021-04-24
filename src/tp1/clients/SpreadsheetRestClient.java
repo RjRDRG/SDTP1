@@ -30,7 +30,7 @@ public class SpreadsheetRestClient implements SpreadsheetApiClient {
     }
 
     @Override
-    public String createSpreadsheet(Spreadsheet sheet, String password) throws WebApplicationException  {
+    public String createSpreadsheet(Spreadsheet sheet, String password)   {
 
         Response r = target.queryParam("password", password).request()
                 .accept(MediaType.APPLICATION_JSON)
@@ -43,7 +43,7 @@ public class SpreadsheetRestClient implements SpreadsheetApiClient {
     }
 
     @Override
-    public void deleteSpreadsheet(String sheetId, String password) throws WebApplicationException {
+    public void deleteSpreadsheet(String sheetId, String password)  {
         Response r = target.path(sheetId).queryParam("password", password).request()
                 .accept(MediaType.APPLICATION_JSON)
                 .delete();
@@ -53,7 +53,7 @@ public class SpreadsheetRestClient implements SpreadsheetApiClient {
     }
 
     @Override
-    public Spreadsheet getSpreadsheet(String sheetId, String userId, String password) throws WebApplicationException {
+    public Spreadsheet getSpreadsheet(String sheetId, String userId, String password)  {
 
         Response r = target.path(sheetId).queryParam("userId", userId).queryParam("password", password).request()
                 .accept(MediaType.APPLICATION_JSON)
@@ -66,7 +66,7 @@ public class SpreadsheetRestClient implements SpreadsheetApiClient {
     }
 
     @Override
-    public String[][] getSpreadsheetValues(String sheetId, String userId, String password) throws WebApplicationException {
+    public String[][] getSpreadsheetValues(String sheetId, String userId, String password)  {
 
         Response r = target.path(sheetId).path("values").queryParam("userId", userId).queryParam("password", password).request()
                 .accept(MediaType.APPLICATION_JSON)
@@ -79,7 +79,7 @@ public class SpreadsheetRestClient implements SpreadsheetApiClient {
     }
 
     @Override
-    public String[][] getReferencedSpreadsheetValues(String sheetId, String userId, String range) throws WebApplicationException  {
+    public String[][] getReferencedSpreadsheetValues(String sheetId, String userId, String range)   {
 
         Response r = target.path("reference").path(sheetId).queryParam("userId", userId).queryParam("range",range).request()
                 .accept(MediaType.APPLICATION_JSON)
@@ -92,7 +92,7 @@ public class SpreadsheetRestClient implements SpreadsheetApiClient {
     }
 
     @Override
-    public void updateCell(String sheetId, String cell, String rawValue, String userId, String password) throws WebApplicationException  {
+    public void updateCell(String sheetId, String cell, String rawValue, String userId, String password)   {
 
         Response r = target.path(sheetId).path(cell).queryParam("").queryParam("userId", userId).queryParam("password",  password).request()
                 .accept(MediaType.APPLICATION_JSON)
@@ -103,7 +103,7 @@ public class SpreadsheetRestClient implements SpreadsheetApiClient {
     }
 
     @Override
-    public void shareSpreadsheet(String sheetId, String userId, String password) throws WebApplicationException  {
+    public void shareSpreadsheet(String sheetId, String userId, String password)   {
         Response r = target.path(sheetId).path("share").path(userId).queryParam("password",  password).request()
                 .accept(MediaType.APPLICATION_JSON)
                 .post(Entity.entity(userId, MediaType.APPLICATION_JSON));
@@ -113,7 +113,7 @@ public class SpreadsheetRestClient implements SpreadsheetApiClient {
     }
 
     @Override
-    public void unshareSpreadsheet(String sheetId, String userId, String password) throws WebApplicationException  {
+    public void unshareSpreadsheet(String sheetId, String userId, String password) {
         Response r = target.path(sheetId).path("share").path(userId).queryParam("password",  password).request()
                 .accept(MediaType.APPLICATION_JSON)
                 .delete();

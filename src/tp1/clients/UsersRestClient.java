@@ -29,7 +29,7 @@ public class UsersRestClient implements UsersApiClient {
     }
 
     @Override
-    public String createUser(User user) throws WebApplicationException {
+    public String createUser(User user)  {
         Response r = target.request()
                 .accept(MediaType.APPLICATION_JSON)
                 .post(Entity.entity(user, MediaType.APPLICATION_JSON));
@@ -64,7 +64,7 @@ public class UsersRestClient implements UsersApiClient {
     }
 
     @Override
-    public User getUser(String userId, String password) throws WebApplicationException {
+    public User getUser(String userId, String password)  {
 
         Response r = target.path(userId).queryParam("password", password).request()
                 .accept(MediaType.APPLICATION_JSON)
@@ -77,7 +77,7 @@ public class UsersRestClient implements UsersApiClient {
     }
 
     @Override
-    public User updateUser(String userId, String password, User user) throws WebApplicationException {
+    public User updateUser(String userId, String password, User user)  {
 
         Response r = target.path(userId).queryParam("password",  password).request()
                 .accept(MediaType.APPLICATION_JSON)
@@ -90,7 +90,7 @@ public class UsersRestClient implements UsersApiClient {
     }
 
     @Override
-    public User deleteUser(String userId, String password) throws WebApplicationException {
+    public User deleteUser(String userId, String password)  {
         Response r = target.path( userId).queryParam("password", password).request()
                 .accept(MediaType.APPLICATION_JSON)
                 .delete();
@@ -102,7 +102,7 @@ public class UsersRestClient implements UsersApiClient {
     }
 
     @Override
-    public List<User> searchUsers(String pattern) throws WebApplicationException {
+    public List<User> searchUsers(String pattern)  {
         Response r = target.path("/").queryParam("query", pattern).request()
                 .accept(MediaType.APPLICATION_JSON)
                 .get();

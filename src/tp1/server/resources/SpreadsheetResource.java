@@ -2,12 +2,13 @@ package tp1.server.resources;
 
 import jakarta.inject.Singleton;
 import jakarta.jws.WebService;
+import jakarta.ws.rs.WebApplicationException;
 import jakarta.ws.rs.core.Response;
 import org.apache.commons.lang3.tuple.Pair;
 import tp1.api.Spreadsheet;
-import tp1.api.User;
 import tp1.api.engine.SpreadsheetEngine;
 import tp1.api.service.rest.RestSpreadsheets;
+import tp1.api.service.soap.SheetsException;
 import tp1.api.service.soap.SoapSpreadsheets;
 import tp1.clients.*;
 import tp1.discovery.Discovery;
@@ -22,7 +23,7 @@ import java.util.*;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.logging.Logger;
 
-import static tp1.util.ExceptionMapper.throwWebAppException;
+import static tp1.server.WebServiceType.SOAP;
 
 @WebService(
 		serviceName = SoapSpreadsheets.NAME,
@@ -113,8 +114,15 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 		return cachedUserClient;
 	}
 
+	public static void throwWebAppException(Logger Log, String msg, WebServiceType type, Response.Status status) throws SheetsException {
+		if(type == SOAP)
+			throw new SheetsException(msg);
+		else
+			throw new WebApplicationException(status);
+	}
+
 	@Override
-	public String createSpreadsheet(Spreadsheet sheet, String password) {
+	public String createSpreadsheet(Spreadsheet sheet, String password) throws SheetsException {
 
 		if( sheet == null || password == null)
 			throwWebAppException(Log, "Sheet or password null.", type, Response.Status.BAD_REQUEST);
@@ -155,7 +163,7 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 	}
 
 	@Override
-	public void deleteSpreadsheet(String sheetId, String password) {
+	public void deleteSpreadsheet(String sheetId, String password) throws SheetsException {
 
 		if( sheetId == null || password == null ) {
 			throwWebAppException(Log, "SheetId or password null.", type, Response.Status.BAD_REQUEST);
@@ -184,7 +192,7 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 	}
 
 	@Override
-	public Spreadsheet getSpreadsheet(String sheetId, String userId, String password) {
+	public Spreadsheet getSpreadsheet(String sheetId, String userId, String password) throws SheetsException {
 
 		if( sheetId == null || userId == null ) {
 			throwWebAppException(Log, "SheetId or userId null.", type, Response.Status.BAD_REQUEST);
@@ -216,7 +224,7 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 	}
 
 	@Override
-	public String[][] getReferencedSpreadsheetValues(String sheetId, String userId, String range) {
+	public String[][] getReferencedSpreadsheetValues(String sheetId, String userId, String range) throws SheetsException {
 		if( sheetId == null || userId == null || range == null) {
 			throwWebAppException(Log, "SheetId or userId or range null.", type, Response.Status.BAD_REQUEST);
 		}
@@ -242,7 +250,7 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 	}
 
 	@Override
-	public String[][] getSpreadsheetValues(String sheetId, String userId, String password) {
+	public String[][] getSpreadsheetValues(String sheetId, String userId, String password) throws SheetsException {
 
 		Spreadsheet spreadsheet = getSpreadsheet(sheetId, userId, password);
 
@@ -257,7 +265,7 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 	}
 
 	@Override
-	public void updateCell(String sheetId, String cell, String rawValue, String userId, String password) {
+	public void updateCell(String sheetId, String cell, String rawValue, String userId, String password) throws SheetsException {
 
 		if( sheetId == null || cell == null || rawValue == null || userId == null || password == null) {
 			throwWebAppException(Log, "Malformed request.", type, Response.Status.BAD_REQUEST);
@@ -283,7 +291,7 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 
 
 	@Override
-	public void shareSpreadsheet(String sheetId, String userId, String password) {
+	public void shareSpreadsheet(String sheetId, String userId, String password) throws SheetsException {
 
 		if( sheetId == null || userId == null || password == null ) {
 			throwWebAppException(Log, "SheetId or userId or password null.", type, Response.Status.BAD_REQUEST);
@@ -318,7 +326,7 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 	}
 
 	@Override
-	public void unshareSpreadsheet(String sheetId, String userId, String password) {
+	public void unshareSpreadsheet(String sheetId, String userId, String password) throws SheetsException {
 
 		if( sheetId == null || userId == null || password == null ) {
 			throwWebAppException(Log, "SheetId or userId or password null.", type, Response.Status.BAD_REQUEST);
@@ -349,7 +357,7 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 	}
 
 	@Override
-	public void deleteUserSpreadsheets(String userId, String password) {
+	public void deleteUserSpreadsheets(String userId, String password) throws SheetsException {
 		synchronized (this) {
 
 			boolean valid = true;
