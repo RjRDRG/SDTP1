@@ -58,8 +58,7 @@ public class UsersResource implements RestUsers, SoapUsers {
 
 	@Override
 	public String createUser(User user) throws UsersException {
-		if(user.getUserId() == null || user.getPassword() == null || user.getFullName() == null || 
-				user.getEmail() == null) {
+		if(user.getUserId() == null || user.getPassword() == null || user.getFullName() == null || user.getEmail() == null) {
 			throwWebAppException(type, Status.BAD_REQUEST );
 		}
 

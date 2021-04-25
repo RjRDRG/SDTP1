@@ -17,7 +17,7 @@ public class UsersCachedClient implements UsersClient{
         this.client = client;
         this.usersCache = new HashMap<>();
 
-        //startCollecting();
+        startCollecting();
     }
 
     public UsersCachedClient(String serverUrl) throws Exception{
@@ -30,7 +30,7 @@ public class UsersCachedClient implements UsersClient{
         this.client = new UsersRetryClient(c);
         this.usersCache = new HashMap<>();
 
-        //startCollecting();
+        startCollecting();
     }
 
     private void startCollecting() {

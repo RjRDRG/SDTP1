@@ -104,7 +104,7 @@ public class SpreadsheetResource implements RestSpreadsheets, SoapSpreadsheets {
 			spreadsheets.put(sheetId, spreadsheet);
 
 			if (!spreadsheetOwners.containsKey(spreadsheetOwner))
-				spreadsheetOwners.put(spreadsheetOwner, new TreeSet<>());
+				spreadsheetOwners.put(spreadsheetOwner, new HashSet<>());
 
 			spreadsheetOwners.get(spreadsheetOwner).add(sheetId);
 

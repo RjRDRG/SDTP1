@@ -148,14 +148,14 @@ public class Discovery {
 		if(service.equals(UsersClient.SERVICE) && !usersClients.containsKey(domain)) {
 			try {
 				UsersCachedClient client = new UsersCachedClient(serverUrl);
-				usersClients.put(domainId, client);
+				usersClients.put(domain, client);
 			} catch (Exception ignored) {
 			}
 		}
 		else if(service.equals(SpreadsheetClient.SERVICE) && !spreadsheetClients.containsKey(domain)) {
 			try {
 				SpreadsheetCachedClient client = new SpreadsheetCachedClient(serverUrl);
-				spreadsheetClients.put(domainId, client);
+				spreadsheetClients.put(domain, client);
 			} catch (Exception ignored) {
 			}
 		}
